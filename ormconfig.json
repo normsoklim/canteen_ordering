@@ -1,0 +1,16 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "postgres",
+  "password": "1234",
+  "database": "canteen_db",
+  "synchronize": false,
+  "logging": false,
+  "entities": ["src/**/*.entity{.ts,.js}"],
+  "migrations": ["src/database/migrations/**/*{.ts,.js}"],
+  "subscribers": ["src/database/subscribers/**/*{.ts,.js}"],
+  "cli": {
+    "migrationsDir": "src/database/migrations"
+  }
+}
