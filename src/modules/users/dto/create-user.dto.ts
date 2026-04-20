@@ -1,24 +1,45 @@
-import { IsString, IsEmail, IsNotEmpty, MinLength, IsEnum } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
 export class CreateUserDto {
   @IsString()
-  @IsNotEmpty()
+  @MinLength(2)
   fullname: string;
 
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 
   @IsString()
-  @IsNotEmpty()
   @MinLength(6)
+  @IsOptional() // Make password optional for social logins
   password: string;
 
   @IsEnum(Role)
-  role: Role;
+  @IsOptional()
+  role?: Role;
 
   @IsString()
-  @IsNotEmpty()
-  provider: string;
+  @IsOptional()
+  provider?: string;
+
+  @IsString()
+  @IsOptional()
+  providerId?: string;
+
+  @IsString()
+  @IsOptional()
+  googleId?: string;
+
+  @IsString()
+  @IsOptional()
+  facebookId?: string;
+
+  @IsOptional()
+  isEmailVerified?: boolean;
+
+  @IsOptional()
+  emailVerificationToken?: string;
+
+  @IsOptional()
+  emailVerifiedAt?: Date;
 }

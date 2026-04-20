@@ -1,4 +1,4 @@
-import { IsNumber, IsEnum, IsOptional, ValidateNested } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, ValidateNested, IsString, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaymentStatus } from '../enums/payment-status.enum';
 
@@ -24,4 +24,21 @@ export class CreatePaymentDto {
 
   @IsOptional()
   paymentDetails?: any;
+
+  @IsString()
+  @IsOptional()
+  transactionId?: string;
+
+  @IsString()
+  @IsOptional()
+  khqrString?: string;
+
+  @IsString()
+  @IsOptional()
+  qrImage?: string;
+
+  @IsDate()
+  @IsOptional()
+  @Type(() => Date)
+  expiresAt?: Date;
 }

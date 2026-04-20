@@ -5,5 +5,6 @@ export interface RegisterResponseDto {
         fullname: string;
         role: string;
         provider: string;
+        isEmailVerified: boolean;
     };
 }

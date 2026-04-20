@@ -16,8 +16,23 @@ export class PaymentsService {
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     const payment = new Payment();
-    Object.assign(payment, createPaymentDto);
+    
+    // Map DTO to entity, handling paymentMethod conversion
+    payment.orderId = createPaymentDto.orderId;
+    payment.amount = createPaymentDto.amount;
     payment.status = createPaymentDto.status || PaymentStatus.PENDING;
+    payment.transactionId = createPaymentDto.transactionId;
+    payment.khqrString = createPaymentDto.khqrString;
+    payment.qrImage = createPaymentDto.qrImage;
+    payment.expiresAt = createPaymentDto.expiresAt;
+    
+    // Set payment_method_id from paymentMethod object
+    if (createPaymentDto.paymentMethod) {
+      payment.payment_method_id = createPaymentDto.paymentMethod.id;
+    } else {
+      // Default to KHQR payment method (ID 1)
+      payment.payment_method_id = 1;
+    }
     
     // Verify the order exists
     await this.ordersService.findOne(createPaymentDto.orderId);
@@ -30,9 +45,9 @@ export class PaymentsService {
   }
 
   async findOne(id: number): Promise<Payment> {
-    const payment = await this.paymentsRepository.findOne({ 
-      where: { id }, 
-      relations: ['order'] 
+    const payment = await this.paymentsRepository.findOne({
+      where: { id },
+      relations: ['order']
     });
     if (!payment) {
       throw new NotFoundException(`Payment with ID ${id} not found`);
@@ -40,10 +55,46 @@ export class PaymentsService {
     return payment;
   }
 
+  async findByTransactionId(transactionId: string): Promise<Payment> {
+    const payment = await this.paymentsRepository.findOne({
+      where: { transactionId },
+      relations: ['order']
+    });
+    if (!payment) {
+      throw new NotFoundException(`Payment with transaction ID ${transactionId} not found`);
+    }
+    return payment;
+  }
+
+  async updatePaymentStatus(id: number, status: PaymentStatus, paidAt?: Date): Promise<Payment> {
+    const payment = await this.findOne(id);
+    payment.status = status;
+    if (paidAt) {
+      payment.paidAt = paidAt;
+    }
+    return this.paymentsRepository.save(payment);
+  }
+
   async remove(id: number): Promise<void> {
     const result = await this.paymentsRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Payment with ID ${id} not found`);
     }
+  }
+
+  async findByOrderId(orderId: number): Promise<Payment | null> {
+    return this.paymentsRepository.findOne({
+      where: { orderId },
+      relations: ['order']
+    });
+  }
+
+  async update(id: number, updateData: Partial<Payment>): Promise<Payment> {
+    const payment = await this.findOne(id);
+    
+    // Update only the provided fields
+    Object.assign(payment, updateData);
+    
+    return this.paymentsRepository.save(payment);
   }
 }

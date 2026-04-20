@@ -23,6 +23,14 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalInterceptors(new LoggingInterceptor());
   
+  // Enable CORS for frontend development
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5501', 'null'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true,
+  });
+  
   const port = process.env.PORT || 3000;
   await app.listen(port);
 }

@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Role } from '../../../common/enums/role.enum';
+import bcrypt from 'node_modules/bcryptjs/umd/types';
 
 @Entity('users')
 export class User {
@@ -22,8 +23,11 @@ export class User {
   })
   role: Role;
 
-  @Column({ nullable: true })
-  provider: string;
+ @Column({ enum: ['local', 'google', 'facebook'], default: 'local' })
+  provider: 'local' | 'google' | 'facebook';
+
+  @Column({name:'provider_id'})
+  providerId: string;
 
   @Column({ nullable: true })
   googleId?: string;
@@ -36,4 +40,13 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+  
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ nullable: true })
+  emailVerificationToken?: string;
+
+  @Column({ nullable: true })
+  emailVerifiedAt?: Date;
 }

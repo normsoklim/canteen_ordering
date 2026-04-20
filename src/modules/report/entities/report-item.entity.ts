@@ -1,4 +1,5 @@
 import { MenuItem } from "src/modules/menu/entities/menu-item.entity";
+import { Report } from "./report.entity";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('report_line_items')

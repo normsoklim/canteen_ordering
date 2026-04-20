@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
 import { PaymentStatus } from '../enums/payment-status.enum';
 
@@ -22,10 +22,24 @@ export class Payment {
     enum: PaymentStatus,
   })
   status: PaymentStatus;
-  
 
-  @Column({ name: 'paid_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  paidAt: Date;
+  @Column({ name: 'transaction_id', nullable: true })
+  transactionId?: string;
+
+  @Column({ name: 'khqr_string', type: 'text', nullable: true })
+  khqrString?: string;
+
+  @Column({ name: 'qr_image', type: 'text', nullable: true })
+  qrImage?: string;
+
+  @Column({ name: 'expires_at', type: 'timestamp', nullable: true })
+  expiresAt?: Date;
+
+  @Column({ name: 'paid_at', type: 'timestamp', nullable: true })
+  paidAt?: Date;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
   @ManyToOne(() => Order)
   @JoinColumn({ name: 'order_id' })

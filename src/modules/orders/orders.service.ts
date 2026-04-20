@@ -80,7 +80,13 @@ export class OrdersService {
     return orderWithItems;
   }
 
-  findAll(): Promise<Order[]> {
+  findAll(userId?: number): Promise<Order[]> {
+    if (userId) {
+      return this.ordersRepository.find({
+        where: { userId },
+        relations: ['user', 'orderItemsList']
+      });
+    }
     return this.ordersRepository.find({ relations: ['user', 'orderItemsList'] });
   }
 

@@ -7,6 +7,20 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  async findByEmailVerificationToken(token: string): Promise<User | null> {
+    const user = await this.usersRepository.findOne({
+      where: { emailVerificationToken: token }
+    });
+    return user;
+  }
+
+  async verifyEmail(userId: number): Promise<User> {
+    const user = await this.findOne(userId);
+    user.isEmailVerified = true;
+    user.emailVerifiedAt = new Date();
+    user.emailVerificationToken = undefined;
+    return this.usersRepository.save(user);
+  }
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -44,12 +58,9 @@ export class UsersService {
   }
   
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    await this.usersRepository.update(id, updateUserDto);
-    const updatedUser = await this.usersRepository.findOne({ where: { id } });
-    if (!updatedUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    return updatedUser;
+    const user = await this.findOne(id);
+    Object.assign(user, updateUserDto);
+    return this.usersRepository.save(user);   
   }
 
   async remove(id: number): Promise<void> {
@@ -57,5 +68,15 @@ export class UsersService {
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+    return;
+  }
+
+  /**
+   * Update user password by email
+   */
+  async updatePassword(email: string, password: string): Promise<User> {
+    const user = await this.findByEmail(email);
+    user.password = password;
+    return this.usersRepository.save(user);
   }
 }

@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsEnum, IsBoolean } from 'class-validator';
 import { Role } from '../../../common/enums/role.enum';
 
 export class RegisterDto {
@@ -13,6 +13,9 @@ export class RegisterDto {
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password: string;
 
+  @IsBoolean()
+  isEmailVerified: boolean = true;
+
   @IsOptional()
   @IsEnum(Role, { message: 'Role must be a valid role' })
   role?: string;
@@ -22,10 +25,15 @@ export class RegisterDto {
   provider?: string;
 
   @IsOptional()
+  @IsString({ message: 'Provider ID must be a string' })
+  providerId?: string;
+
+  @IsOptional()
   @IsString({ message: 'Google ID must be a string' })
   googleId?: string;
 
   @IsOptional()
   @IsString({ message: 'Facebook ID must be a string' })
   facebookId?: string;
+
 }
