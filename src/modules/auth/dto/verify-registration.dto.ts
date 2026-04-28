@@ -17,6 +17,9 @@ export class VerifyRegistrationDto {
   @MinLength(6)
   password: string;
 
+  @IsString()
+  phone: string;
+
   @IsOptional()
   @IsEnum(Role)
   role?: string;

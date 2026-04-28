@@ -11,6 +11,7 @@ import { MenuModule } from './modules/menu/menu.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReportModule } from './modules/report/report.module';
+import { OrderTrackingModule } from './modules/order-tracking/order-tracking.module';
 import bakongConfig from './config/bakong.config';
 
 @Module({
@@ -37,6 +38,7 @@ import bakongConfig from './config/bakong.config';
     OrdersModule,
     PaymentsModule,
     ReportModule,
+    OrderTrackingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakong KHQR Payment Testing</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    /* ===== LOGIN PAGE ===== */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-card .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-card .logo h1 {
+      font-size: 28px;
+      color: #1a1a2e;
+      font-weight: 700;
+    }
+
+    .login-card .logo p {
+      color: #888;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .login-card .logo .khqr-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #e23636, #c0392b);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #6c5ce7;
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e23636, #c0392b);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(226, 54, 54, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #6c5ce7;
+      color: #6c5ce7;
+    }
+
+    .btn-outline:hover {
+      background: #6c5ce7;
+      color: #fff;
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 13px;
+      width: auto;
+    }
+
+    .error-message {
+      background: #ffe0e0;
+      color: #c0392b;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .navbar .brand span {
+      color: #e23636;
+    }
+
+    .navbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .navbar .user-info .user-email {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .navbar .user-info .logout-btn {
+      padding: 8px 18px;
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .navbar .user-info .logout-btn:hover {
+      background: #e23636;
+      color: #fff;
+      border-color: #e23636;
+    }
+
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+      font-size: 24px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .section-header .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* ===== ORDERS TABLE ===== */
+    .orders-container {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .orders-table thead {
+      background: linear-gradient(135deg, #1a1a2e, #302b63);
+    }
+
+    .orders-table thead th {
+      padding: 16px 20px;
+      text-align: left;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .orders-table tbody tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+
+    .orders-table tbody tr:hover {
+      background: #f8f7ff;
+    }
+
+    .orders-table tbody td {
+      padding: 14px 20px;
+      font-size: 14px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-preparing {
+      background: #e8daef;
+      color: #6c3483;
+    }
+
+    .status-ready {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-completed {
+      background: #c3e6cb;
+      color: #155724;
+    }
+
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .pay-btn {
+      padding: 8px 18px;
+      background: linear-gradient(135deg, #e23636, #c0392b);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .pay-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(226, 54, 54, 0.4);
+    }
+
+    .pay-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+    }
+
+    /* ===== QR MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      animation: modalIn 0.3s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h3 {
+      font-size: 22px;
+      color: #1a1a2e;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: #e23636;
+      color: #fff;
+    }
+
+    .qr-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .qr-container .qr-image {
+      max-width: 280px;
+      width: 100%;
+      border-radius: 12px;
+      border: 3px solid #f0f0f0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .qr-container .qr-raw {
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 11px;
+      color: #666;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+
+    .payment-info {
+      background: #f8f7ff;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .payment-info .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e8e6f0;
+    }
+
+    .payment-info .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .payment-info .info-row .label {
+      color: #888;
+      font-size: 13px;
+    }
+
+    .payment-info .info-row .value {
+      font-weight: 600;
+      font-size: 14px;
+      color: #1a1a2e;
+    }
+
+    .payment-info .info-row .value.amount {
+      color: #e23636;
+      font-size: 18px;
+    }
+
+    .payment-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .payment-actions .btn {
+      flex: 1;
+    }
+
+    .payment-status {
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+      font-weight: 600;
+    }
+
+    .payment-status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .payment-status.paid {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .payment-status.expired {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .countdown {
+      font-size: 13px;
+      color: #888;
+      margin-top: 8px;
+    }
+
+    .countdown.urgent {
+      color: #e23636;
+      font-weight: 600;
+    }
+
+    /* ===== CURRENCY SELECTOR ===== */
+    .currency-selector {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .currency-option {
+      flex: 1;
+      position: relative;
+    }
+
+    .currency-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .currency-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fafafa;
+    }
+
+    .currency-option label:hover {
+      border-color: #6c5ce7;
+      background: #f8f7ff;
+    }
+
+    .currency-option input[type="radio"]:checked + label {
+      border-color: #6c5ce7;
+      background: linear-gradient(135deg, #f8f7ff, #ede9fe);
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+    }
+
+    .currency-option label .currency-flag {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .currency-option label .currency-code {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .currency-option label .currency-name {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .currency-option label .currency-amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e23636;
+      margin-top: 8px;
+    }
+
+    .currency-option input[type="radio"]:checked + label .currency-code {
+      color: #6c5ce7;
+    }
+
+    .exchange-rate-info {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #856404;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .exchange-rate-info strong {
+      color: #e65100;
+    }
+
+    /* ===== TOAST ===== */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+    }
+
+    .toast {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      animation: toastIn 0.3s ease;
+      min-width: 280px;
+    }
+
+    .toast.success {
+      border-left: 4px solid #00b894;
+    }
+
+    .toast.error {
+      border-left: 4px solid #e23636;
+    }
+
+    .toast.info {
+      border-left: 4px solid #6c5ce7;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* ===== REFRESH BTN ===== */
+    .refresh-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .refresh-btn .spin {
+      animation: spin 1s linear infinite;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .content {
+        padding: 16px;
+      }
+
+      .orders-table {
+        font-size: 13px;
+      }
+
+      .orders-table thead th,
+      .orders-table tbody td {
+        padding: 10px 12px;
+      }
+
+      .modal {
+        padding: 24px;
+      }
+
+      .navbar {
+        padding: 12px 16px;
+      }
+
+      .navbar .user-info .user-email {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="loginPage" class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <h1>🍽️ Canteen</h1>
+        <p>Bakong KHQR Payment Testing</p>
+        <span class="khqr-badge">KHQR PAYMENT</span>
+      </div>
+      
+      <div id="loginError" class="error-message"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="dashboardPage" class="dashboard">
+    <nav class="navbar">
+      <div class="brand">🍽️ Canteen <span>KHQR</span></div>
+      <div class="user-info">
+        <span class="user-email" id="userEmail"></span>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="content">
+      <div class="section-header">
+        <div>
+          <h2>My Orders</h2>
+          <div class="subtitle">Select an order to generate Bakong KHQR for payment</div>
+        </div>
+        <button class="refresh-btn" id="refreshOrdersBtn">
+          <span id="refreshIcon">🔄</span> Refresh
+        </button>
+      </div>
+
+      <div class="orders-container">
+        <div id="ordersLoading" class="empty-state">
+          <div class="icon">⏳</div>
+          <p>Loading orders...</p>
+        </div>
+        <div id="ordersEmpty" class="empty-state" style="display:none;">
+          <div class="icon">📦</div>
+          <p>No orders found. Place an order first!</p>
+        </div>
+        <table class="orders-table" id="ordersTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== QR MODAL ===== -->
+  <div id="qrModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>💳 Bakong KHQR Payment</h3>
+        <button class="modal-close" id="closeModal">✕</button>
+      </div>
+
+      <!-- Currency Selection Step -->
+      <div id="currencyStep">
+        <div class="payment-info">
+          <div class="info-row">
+            <span class="label">Order ID</span>
+            <span class="value" id="currencyOrderId">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Amount (USD)</span>
+            <span class="value amount" id="currencyUsdAmount">-</span>
+          </div>
+        </div>
+
+        <p style="font-weight:600; font-size:15px; color:#1a1a2e; margin-bottom:4px;">Select Payment Currency</p>
+        <p style="font-size:13px; color:#888; margin-bottom:0;">Choose which currency to pay with</p>
+
+        <div class="currency-selector">
+          <div class="currency-option">
+            <input type="radio" name="currency" id="currencyUSD" value="USD" checked>
+            <label for="currencyUSD">
+              <span class="currency-flag">🇺🇸</span>
+              <span class="currency-code">USD</span>
+              <span class="currency-name">US Dollar</span>
+              <span class="currency-amount" id="usdDisplayAmount">-</span>
+            </label>
+          </div>
+          <div class="currency-option">
+            <input type="radio" name="currency" id="currencyKHR" value="KHR">
+            <label for="currencyKHR">
+              <span class="currency-flag">🇰🇭</span>
+              <span class="currency-code">KHR</span>
+              <span class="currency-name">Cambodian Riel</span>
+              <span class="currency-amount" id="khrDisplayAmount">-</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="exchange-rate-info">
+          💱 Exchange Rate: <strong>1 USD = 4,000 KHR</strong>
+        </div>
+
+        <button class="btn btn-primary" id="generateQrBtn" style="margin-top:8px;">
+          Generate KHQR Code
+        </button>
+      </div>
+
+      <div id="qrLoading" style="text-align:center; padding: 40px 0; display:none;">
+        <div class="loading-spinner" style="width:40px;height:40px;border-width:3px;border-color:#e0e0e0;border-top-color:#6c5ce7;display:inline-block;"></div>
+        <p style="margin-top:16px;color:#888;">Generating QR Code...</p>
+      </div>
+
+      <div id="qrContent" style="display:none;">
+        <div class="payment-info">
+          <div class="info-row">
+            <span class="label">Order ID</span>
+            <span class="value" id="qrOrderId">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Transaction ID</span>
+            <span class="value" id="qrTransactionId">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Amount</span>
+            <span class="value amount" id="qrAmount">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Currency</span>
+            <span class="value" id="qrCurrency">USD</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Expires At</span>
+            <span class="value" id="qrExpires">-</span>
+          </div>
+        </div>
+
+        <div class="qr-container">
+          <img id="qrImage" class="qr-image" alt="KHQR Code" />
+          <p style="margin-top:12px;color:#888;font-size:13px;">Scan with Bakong app to pay</p>
+          <div id="qrRawContainer" style="display:none;">
+            <div class="qr-raw" id="qrRawString"></div>
+          </div>
+        </div>
+
+        <div id="paymentStatusBadge" class="payment-status pending">
+          ⏳ Awaiting Payment
+        </div>
+        <div class="countdown" id="countdown"></div>
+
+        <div class="payment-actions">
+          <button class="btn btn-success btn-sm" id="verifyPaymentBtn">
+            ✓ Verify Payment
+          </button>
+          <button class="btn btn-outline btn-sm" id="toggleQrRawBtn">
+            Show Raw
+          </button>
+        </div>
+      </div>
+
+      <div id="qrError" style="display:none;">
+        <div style="text-align:center; padding: 20px;">
+          <div style="font-size:48px;margin-bottom:16px;">❌</div>
+          <p style="color:#e23636;font-weight:600;" id="qrErrorMsg">Failed to generate QR</p>
+          <button class="btn btn-primary" style="margin-top:16px;" id="retryQrBtn">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ===== CONFIG =====
+    // Auto-detect API base URL from current page location
+    const API_BASE = window.location.origin || 'http://localhost:3000';
+    const USD_TO_KHR = 4000; // Exchange rate: 1 USD = 4000 KHR
+    
+    // ===== STATE =====
+    let authToken = null;
+    let currentUser = null;
+    let orders = [];
+    let currentPaymentData = null;
+    let countdownInterval = null;
+    let verifyInterval = null;
+    let pendingOrderId = null;
+    let pendingAmount = null; // Amount in USD
+
+    // ===== DOM ELEMENTS =====
+    const loginPage = document.getElementById('loginPage');
+    const dashboardPage = document.getElementById('dashboardPage');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const userEmail = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
+    const refreshIcon = document.getElementById('refreshIcon');
+    const ordersLoading = document.getElementById('ordersLoading');
+    const ordersEmpty = document.getElementById('ordersEmpty');
+    const ordersTable = document.getElementById('ordersTable');
+    const ordersBody = document.getElementById('ordersBody');
+    const qrModal = document.getElementById('qrModal');
+    const closeModal = document.getElementById('closeModal');
+    const qrLoading = document.getElementById('qrLoading');
+    const qrContent = document.getElementById('qrContent');
+    const qrError = document.getElementById('qrError');
+    const qrImage = document.getElementById('qrImage');
+    const qrOrderId = document.getElementById('qrOrderId');
+    const qrTransactionId = document.getElementById('qrTransactionId');
+    const qrAmount = document.getElementById('qrAmount');
+    const qrCurrency = document.getElementById('qrCurrency');
+    const qrExpires = document.getElementById('qrExpires');
+    const qrRawContainer = document.getElementById('qrRawContainer');
+    const qrRawString = document.getElementById('qrRawString');
+    const paymentStatusBadge = document.getElementById('paymentStatusBadge');
+    const countdownEl = document.getElementById('countdown');
+    const verifyPaymentBtn = document.getElementById('verifyPaymentBtn');
+    const toggleQrRawBtn = document.getElementById('toggleQrRawBtn');
+    const retryQrBtn = document.getElementById('retryQrBtn');
+    const qrErrorMsg = document.getElementById('qrErrorMsg');
+    const currencyStep = document.getElementById('currencyStep');
+    const currencyOrderId = document.getElementById('currencyOrderId');
+    const currencyUsdAmount = document.getElementById('currencyUsdAmount');
+    const usdDisplayAmount = document.getElementById('usdDisplayAmount');
+    const khrDisplayAmount = document.getElementById('khrDisplayAmount');
+    const generateQrBtn = document.getElementById('generateQrBtn');
+
+    // ===== API HELPER =====
+    async function apiRequest(endpoint, options = {}) {
+      const url = `${API_BASE}${endpoint}`;
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const message = data.message || data.error || 'Request failed';
+        throw new Error(Array.isArray(message) ? message.join(', ') : message);
+      }
+
+      return data;
+    }
+
+    /**
+     * Unwrap the TransformInterceptor's { success, data } wrapper.
+     * The backend wraps ALL responses in { success: true, data: ... }.
+     * Some controllers also return their own { success, data } structure,
+     * causing double-wrapping. This helper handles both cases.
+     */
+    function unwrapResponse(response) {
+      let result = response;
+      // First unwrap: TransformInterceptor wraps in { success, data }
+      if (result && result.success === true && result.data !== undefined) {
+        result = result.data;
+      }
+      // Second unwrap: controller also wraps in { success, data }
+      if (result && result.success === true && result.data !== undefined && typeof result.data === 'object') {
+        result = result.data;
+      }
+      return result;
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ===== AUTH =====
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        loginError.textContent = 'Please enter email and password';
+        loginError.style.display = 'block';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="loading-spinner"></span> Signing in...';
+      loginError.style.display = 'none';
+
+      try {
+        const response = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        });
+
+        // The TransformInterceptor wraps response in { success: true, data: ... }
+        // Auth service returns { user, access_token }
+        // So after interceptor: { success: true, data: { user, access_token } }
+        const loginData = unwrapResponse(response);
+        const token = loginData.access_token;
+        
+        if (!token) {
+          console.error('Login response missing access_token:', loginData);
+          throw new Error('No token received from server');
+        }
+
+        authToken = token;
+        localStorage.setItem('authToken', token);
+
+        // User info is already in the login response
+        if (loginData.user) {
+          currentUser = loginData.user;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        } else {
+          // Fallback: fetch user profile
+          try {
+            const profile = await apiRequest('/auth/profile');
+            currentUser = unwrapResponse(profile);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          } catch (err) {
+            console.warn('Could not fetch profile, continuing...', err);
+          }
+        }
+
+        showDashboard();
+        showToast('Login successful!', 'success');
+        fetchOrders();
+      } catch (error) {
+        loginError.textContent = error.message;
+        loginError.style.display = 'block';
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Sign In';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      authToken = null;
+      currentUser = null;
+      currentPaymentData = null;
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      clearIntervals();
+      showLogin();
+      showToast('Logged out', 'info');
+    });
+
+    // ===== PAGE SWITCHING =====
+    function showLogin() {
+      loginPage.style.display = 'flex';
+      dashboardPage.style.display = 'none';
+    }
+
+    function showDashboard() {
+      loginPage.style.display = 'none';
+      dashboardPage.style.display = 'block';
+      
+      if (currentUser) {
+        userEmail.textContent = currentUser.email || currentUser.username || 'User';
+      }
+    }
+
+    // ===== ORDERS =====
+    async function fetchOrders() {
+      ordersLoading.style.display = 'block';
+      ordersEmpty.style.display = 'none';
+      ordersTable.style.display = 'none';
+
+      try {
+        const response = await apiRequest('/orders');
+        const ordersData = unwrapResponse(response);
+        orders = Array.isArray(ordersData) ? ordersData : (ordersData.orders || ordersData.data || []);
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+          ordersLoading.style.display = 'none';
+          ordersEmpty.style.display = 'block';
+          return;
+        }
+
+        renderOrders(orders);
+        ordersLoading.style.display = 'none';
+        ordersTable.style.display = 'table';
+      } catch (error) {
+        ordersLoading.style.display = 'none';
+        ordersEmpty.style.display = 'block';
+        ordersEmpty.querySelector('p').textContent = `Error: ${error.message}`;
+        showToast(`Failed to fetch orders: ${error.message}`, 'error');
+      }
+    }
+
+    function renderOrders(orders) {
+      ordersBody.innerHTML = '';
+
+      orders.forEach((order) => {
+        const tr = document.createElement('tr');
+        
+        const orderId = order.orderId || order.order_id || order.id;
+        const orderDate = order.orderDate || order.order_date || order.createdAt;
+        const totalAmount = order.totalAmount || order.total_amount;
+        const status = order.status || 'PENDING';
+
+        // Determine if order can be paid (pending or confirmed status)
+        const canPay = ['PENDING', 'CONFIRMED'].includes(status.toUpperCase());
+        
+        // Check if payment already exists - check for payment relation or paymentId
+        const hasPayment = order.payment || order.paymentId || order.payment_method_id;
+
+        const dateStr = orderDate 
+          ? new Date(orderDate).toLocaleDateString('en-US', { 
+              year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+            })
+          : '-';
+
+        const statusClass = `status-${status.toLowerCase()}`;
+
+        tr.innerHTML = `
+          <td><strong>#${orderId}</strong></td>
+          <td>${dateStr}</td>
+          <td><strong>$${parseFloat(totalAmount).toFixed(2)}</strong></td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
+          <td>${hasPayment ? '<span class="status-badge status-completed">Paid</span>' : '<span class="status-badge status-pending">Unpaid</span>'}</td>
+          <td>
+            <button class="pay-btn"
+              ${!canPay ? 'disabled' : ''}
+              onclick="showCurrencySelection(${orderId}, ${totalAmount})">
+              ${hasPayment ? 'View QR' : '💳 Pay Now'}
+            </button>
+          </td>
+        `;
+
+        ordersBody.appendChild(tr);
+      });
+    }
+
+    refreshOrdersBtn.addEventListener('click', () => {
+      refreshIcon.classList.add('spin');
+      fetchOrders().finally(() => {
+        setTimeout(() => refreshIcon.classList.remove('spin'), 500);
+      });
+    });
+
+    // ===== CURRENCY SELECTION =====
+    function showCurrencySelection(orderId, amount) {
+      pendingOrderId = orderId;
+      pendingAmount = parseFloat(amount);
+
+      // Reset to USD selection
+      document.getElementById('currencyUSD').checked = true;
+
+      // Populate currency selection info
+      currencyOrderId.textContent = `#${orderId}`;
+      currencyUsdAmount.textContent = `$${pendingAmount.toFixed(2)}`;
+      usdDisplayAmount.textContent = `$${pendingAmount.toFixed(2)}`;
+      khrDisplayAmount.textContent = `៛${(pendingAmount * USD_TO_KHR).toLocaleString()}`;
+
+      // Show currency step, hide others
+      currencyStep.style.display = 'block';
+      qrLoading.style.display = 'none';
+      qrContent.style.display = 'none';
+      qrError.style.display = 'none';
+      clearIntervals();
+
+      qrModal.classList.add('active');
+    }
+
+    // Update display when currency radio changes
+    document.querySelectorAll('input[name="currency"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        // Visual feedback is handled by CSS :checked selector
+      });
+    });
+
+    // Generate QR button click handler
+    generateQrBtn.addEventListener('click', () => {
+      const selectedCurrency = document.querySelector('input[name="currency"]:checked').value;
+      const amount = pendingAmount;
+      const orderId = pendingOrderId;
+
+      if (!orderId || !amount) {
+        showToast('Missing order information', 'error');
+        return;
+      }
+
+      // Calculate the amount based on currency
+      let paymentAmount = amount;
+      if (selectedCurrency === 'KHR') {
+        paymentAmount = amount * USD_TO_KHR;
+      }
+
+      generateQR(orderId, paymentAmount, selectedCurrency);
+    });
+
+    // ===== KHQR GENERATION =====
+    async function generateQR(orderId, amount, currency = 'USD') {
+      // Hide currency step, show loading
+      currencyStep.style.display = 'none';
+      qrLoading.style.display = 'block';
+      qrContent.style.display = 'none';
+      qrError.style.display = 'none';
+      clearIntervals();
+
+      try {
+        const response = await apiRequest('/payments/khqr/generate', {
+          method: 'POST',
+          body: JSON.stringify({
+            orderId: orderId,
+            amount: amount,
+            description: `Payment for Order #${orderId}`,
+            currency: currency,
+          }),
+        });
+
+        // The TransformInterceptor wraps the controller response in { success: true, data: ... }
+        // The controller returns { success: true, data: { paymentId, transactionId, khqrHash, md5, qrImage, ... } }
+        // So the final response is: { success: true, data: { success: true, data: { ... } } }
+        const data = unwrapResponse(response);
+        currentPaymentData = { ...data, orderId, amount, currency };
+
+        console.log('KHQR generate unwrapped data:', data);
+
+        // Populate QR modal
+        qrOrderId.textContent = `#${orderId}`;
+        qrTransactionId.textContent = data.transactionId || '-';
+        
+        // Format amount based on currency
+        if (currency === 'KHR') {
+          qrAmount.textContent = `៛${parseFloat(data.amount || amount).toLocaleString()}`;
+        } else {
+          qrAmount.textContent = `$${parseFloat(data.amount || amount).toFixed(2)}`;
+        }
+        qrCurrency.textContent = data.currency || currency;
+        
+        if (data.expiresAt) {
+          const expiresDate = new Date(data.expiresAt);
+          qrExpires.textContent = expiresDate.toLocaleString();
+        } else {
+          qrExpires.textContent = '-';
+        }
+
+        // Set QR image
+        if (data.qrImage) {
+          // Check if it's base64 or URL
+          if (data.qrImage.startsWith('http')) {
+            qrImage.src = data.qrImage;
+          } else if (data.qrImage.startsWith('data:')) {
+            qrImage.src = data.qrImage;
+          } else {
+            // Assume base64 PNG
+            qrImage.src = `data:image/png;base64,${data.qrImage}`;
+          }
+          qrImage.style.display = 'inline-block';
+        } else {
+          qrImage.style.display = 'none';
+          console.warn('No QR image data received from server');
+        }
+
+        // Set raw QR string if available
+        if (data.khqrHash) {
+          qrRawString.textContent = data.khqrHash;
+        }
+
+        // Reset status
+        paymentStatusBadge.className = 'payment-status pending';
+        paymentStatusBadge.innerHTML = '⏳ Awaiting Payment';
+
+        qrLoading.style.display = 'none';
+        qrContent.style.display = 'block';
+
+        // Start countdown
+        startCountdown(data.expiresAt);
+
+        // Auto-verify every 10 seconds using md5 hash
+        startAutoVerify(data.md5 || data.khqrHash);
+
+      } catch (error) {
+        qrLoading.style.display = 'none';
+        qrError.style.display = 'block';
+        qrErrorMsg.textContent = error.message;
+        showToast(`QR generation failed: ${error.message}`, 'error');
+      }
+    }
+
+    // ===== COUNTDOWN =====
+    function startCountdown(expiresAt) {
+      if (!expiresAt) {
+        countdownEl.textContent = '';
+        return;
+      }
+
+      const updateCountdown = () => {
+        const now = new Date().getTime();
+        const expire = new Date(expiresAt).getTime();
+        const diff = expire - now;
+
+        if (diff <= 0) {
+          countdownEl.textContent = 'QR Code has expired';
+          countdownEl.className = 'countdown urgent';
+          paymentStatusBadge.className = 'payment-status expired';
+          paymentStatusBadge.innerHTML = '⏰ QR Expired - Generate new one';
+          clearIntervals();
+          return;
+        }
+
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        countdownEl.textContent = `Expires in ${minutes}m ${seconds}s`;
+        countdownEl.className = minutes < 2 ? 'countdown urgent' : 'countdown';
+      };
+
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    // ===== AUTO VERIFY =====
+    function startAutoVerify(md5Hash) {
+      if (!md5Hash) return;
+
+      verifyInterval = setInterval(async () => {
+        try {
+          const response = await apiRequest(`/payments/khqr/verify/${md5Hash}`);
+          const data = unwrapResponse(response);
+
+          if (data.status === 'SUCCESS' || data.status === 'PAID' || data.success === true) {
+            paymentStatusBadge.className = 'payment-status paid';
+            paymentStatusBadge.innerHTML = '✅ Payment Confirmed!';
+            countdownEl.textContent = '';
+            clearIntervals();
+            showToast('Payment confirmed!', 'success');
+            fetchOrders(); // Refresh orders
+          }
+        } catch (err) {
+          // Silently ignore verification errors during auto-check
+        }
+      }, 10000);
+    }
+
+    // ===== VERIFY PAYMENT =====
+    verifyPaymentBtn.addEventListener('click', async () => {
+      if (!currentPaymentData) {
+        showToast('No transaction to verify', 'error');
+        return;
+      }
+
+      // Use md5 for verification (preferred), fallback to khqrHash
+      const verifyHash = currentPaymentData.md5 || currentPaymentData.khqrHash;
+      if (!verifyHash) {
+        showToast('No verification hash available for this transaction', 'error');
+        return;
+      }
+
+      verifyPaymentBtn.disabled = true;
+      verifyPaymentBtn.innerHTML = '<span class="loading-spinner"></span> Verifying...';
+
+      try {
+        const response = await apiRequest(`/payments/khqr/verify/${verifyHash}`);
+        const data = unwrapResponse(response);
+
+        if (data.status === 'SUCCESS' || data.status === 'PAID' || data.success === true) {
+          paymentStatusBadge.className = 'payment-status paid';
+          paymentStatusBadge.innerHTML = '✅ Payment Confirmed!';
+          countdownEl.textContent = '';
+          clearIntervals();
+          showToast('Payment confirmed!', 'success');
+          fetchOrders();
+        } else {
+          showToast('Payment not yet confirmed. Please try again.', 'info');
+        }
+      } catch (error) {
+        showToast(`Verification failed: ${error.message}`, 'error');
+      } finally {
+        verifyPaymentBtn.disabled = false;
+        verifyPaymentBtn.innerHTML = '✓ Verify Payment';
+      }
+    });
+
+    // ===== MODAL CONTROLS =====
+    closeModal.addEventListener('click', () => {
+      qrModal.classList.remove('active');
+      clearIntervals();
+    });
+
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) {
+        qrModal.classList.remove('active');
+        clearIntervals();
+      }
+    });
+
+    // ===== TOGGLE RAW QR =====
+    toggleQrRawBtn.addEventListener('click', () => {
+      const isHidden = qrRawContainer.style.display === 'none';
+      qrRawContainer.style.display = isHidden ? 'block' : 'none';
+      toggleQrRawBtn.textContent = isHidden ? 'Hide Raw' : 'Show Raw';
+    });
+
+    // ===== RETRY QR =====
+    retryQrBtn.addEventListener('click', () => {
+      if (currentPaymentData) {
+        generateQR(currentPaymentData.orderId, currentPaymentData.amount, currentPaymentData.currency || 'USD');
+      }
+    });
+
+    // ===== CLEAR INTERVALS =====
+    function clearIntervals() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      if (verifyInterval) {
+        clearInterval(verifyInterval);
+        verifyInterval = null;
+      }
+    }
+
+    // ===== INIT: Check for existing token =====
+    (function init() {
+      const savedToken = localStorage.getItem('authToken');
+      const savedUser = localStorage.getItem('currentUser');
+
+      if (savedToken) {
+        authToken = savedToken;
+        if (savedUser) {
+          try {
+            currentUser = JSON.parse(savedUser);
+          } catch (e) {
+            currentUser = null;
+          }
+        }
+
+        // Verify token is still valid
+        apiRequest('/auth/profile')
+          .then((profile) => {
+            currentUser = unwrapResponse(profile);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showDashboard();
+            fetchOrders();
+          })
+          .catch(() => {
+            // Token expired
+            authToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            showLogin();
+          });
+      } else {
+        showLogin();
+      }
+    })();
+  </script>
+</body>
+</html>

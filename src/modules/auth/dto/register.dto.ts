@@ -20,6 +20,9 @@ export class RegisterDto {
   @IsEnum(Role, { message: 'Role must be a valid role' })
   role?: string;
 
+  @IsString({ message: 'Phone number must be a string' })
+  phone: string;
+
   @IsOptional()
   @IsString({ message: 'Provider must be a string' })
   provider?: string;
@@ -35,5 +38,7 @@ export class RegisterDto {
   @IsOptional()
   @IsString({ message: 'Facebook ID must be a string' })
   facebookId?: string;
+
+  
 
 }

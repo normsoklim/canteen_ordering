@@ -68,22 +68,27 @@ export class KhqrController {
             paymentId: updatedPayment.id,
             transactionId: khqrData.transactionId,
             khqrHash: khqrData.khqrHash,
+            md5: khqrData.md5, // Include md5 for payment verification
             qrImage: khqrData.qrImage,
             expiresAt: khqrData.expiresAt,
             amount: khqrData.amount,
+            currency: khqrData.currency,
           },
         };
         } else {
           // Return existing payment if not expired
+          const existingMd5 = existingPayment.khqrString ? HashUtil.generateMD5Hash(existingPayment.khqrString) : null;
         return {
           success: true,
           data: {
             paymentId: existingPayment.id,
             transactionId: existingPayment.transactionId,
-            khqrHash: existingPayment.khqrString ? HashUtil.generateMD5Hash(existingPayment.khqrString) : null,
+            khqrHash: existingMd5,
+            md5: existingMd5, // Include md5 for payment verification
             qrImage: existingPayment.qrImage,
             expiresAt: existingPayment.expiresAt,
             amount: existingPayment.amount,
+            currency: 'USD',
           },
         };
         }
@@ -109,9 +114,11 @@ export class KhqrController {
             paymentId: payment.id,
             transactionId: khqrData.transactionId,
             khqrHash: khqrData.khqrHash,
+            md5: khqrData.md5, // Include md5 for payment verification
             qrImage: khqrData.qrImage,
             expiresAt: khqrData.expiresAt,
             amount: khqrData.amount,
+            currency: khqrData.currency,
           },
         };
       }
@@ -122,13 +129,14 @@ export class KhqrController {
   }
 
   /**
-   * Verify payment status
+   * Verify payment status using MD5 hash
+   * The MD5 hash is returned when generating the KHQR and must be used for verification
    */
-  @Get('verify/:transactionId')
-  async verifyPayment(@Param('transactionId') transactionId: string) {
+  @Get('verify/:md5')
+  async verifyPayment(@Param('md5') md5: string) {
     try {
-      // Verify with Bakong API
-      const verification = await this.khqrService.verifyPayment(transactionId);
+      // Verify with Bakong API using the MD5 hash of the KHQR string
+      const verification = await this.khqrService.verifyPayment(md5);
 
       return {
         success: true,
@@ -196,6 +204,7 @@ export class KhqrController {
           qrImage: khqrData.qrImage,
           expiresAt: khqrData.expiresAt,
           amount: khqrData.amount,
+          md5: khqrData.md5,
         },
       };
     } catch (error) {
@@ -264,8 +273,8 @@ export class KhqrDebugController {
         success: true,
         data: debugInfo,
         message: debugInfo.needsSetup ?
-          '⚠️ Bakong account needs to be configured. QR codes will show \"unknown account\" until you set up your own Bakong account.' :
-          '✅ Bakong account appears to be configured. If QR codes still show \"unknown account\", verify your account is active with Bakong.'
+          '⚠️ Bakong account needs to be configured. QR codes will show "unknown account" until you set up your own Bakong account.' :
+          '✅ Bakong account appears to be configured. If QR codes still show "unknown account", verify your account is active with Bakong.'
       };
     } catch (error) {
       return {
@@ -301,6 +310,7 @@ export class KhqrDebugController {
             qrImage: khqrData.qrImage,
             expiresAt: khqrData.expiresAt,
             amount: khqrData.amount,
+            md5: khqrData.md5,
             accountId: debugInfo.accountId
           }
         },
@@ -313,33 +323,6 @@ export class KhqrDebugController {
         success: false,
         error: error.message,
         message: '❌ Failed to generate test KHQR. Please check your Bakong account configuration.'
-      };
-    }
-  }
-
-  /**
-   * Generate simple test QR for debugging
-   */
-  @Post('test/simple')
-  async generateSimpleTestQR() {
-    try {
-      const khqrData = await this.khqrService.generateSimpleTestQR(1, 999);
-      
-      return {
-        success: true,
-        data: {
-          transactionId: khqrData.transactionId,
-          qrImage: khqrData.qrImage,
-          expiresAt: khqrData.expiresAt,
-          amount: khqrData.amount,
-        },
-        message: '✅ Simple test QR generated. This QR contains basic text and should be scannable by any QR reader.'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        message: '❌ Failed to generate simple test QR.'
       };
     }
   }

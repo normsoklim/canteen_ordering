@@ -42,4 +42,8 @@ export class CreateUserDto {
 
   @IsOptional()
   emailVerifiedAt?: Date;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
 }

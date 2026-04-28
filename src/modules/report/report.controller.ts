@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Body,
   Param,
   Query,
@@ -9,15 +10,25 @@ import {
   Res,
   HttpStatus,
   ParseIntPipe,
-  BadRequestException
+  BadRequestException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportService } from './report.service';
 import { GenerateReportDto } from './dto/generate-report.dto';
-import { ReportResponseDto, ReportPreviewResponseDto } from './dto/report-response.dto';
+import {
+  ReportResponseDto,
+  ReportPreviewResponseDto,
+  PaginatedReportsResponseDto,
+} from './dto/report-response.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth/jwt-auth.guard';
 import { User } from '../../common/decorators/user.decorator';
-import { readFileSync } from 'fs';
+import { createReadStream, statSync } from 'fs';
+
+const CONTENT_TYPES: Record<string, string> = {
+  pdf: 'application/pdf',
+  csv: 'text/csv',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+};
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard)
@@ -27,74 +38,69 @@ export class ReportController {
   @Post('generate')
   async generateReport(
     @Body() generateReportDto: GenerateReportDto,
-    @User() user: any
+    @User() user: { userId: number },
   ): Promise<ReportResponseDto> {
     return this.reportService.generateReport(generateReportDto, user.userId);
   }
 
   @Post('preview')
-  async getReportPreview(
-    @Body() generateReportDto: GenerateReportDto
-  ): Promise<ReportPreviewResponseDto> {
+  async getReportPreview(@Body() generateReportDto: GenerateReportDto): Promise<ReportPreviewResponseDto> {
     return this.reportService.getReportPreview(generateReportDto);
   }
 
   @Get()
   async getUserReports(
-    @User() user: any,
+    @User() user: { userId: number },
     @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10
-  ): Promise<{ reports: ReportResponseDto[], total: number }> {
+    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
+  ): Promise<PaginatedReportsResponseDto> {
     return this.reportService.getUserReports(user.userId, page, limit);
   }
 
   @Get(':id')
-  async getReportById(
-    @Param('id', ParseIntPipe) id: number
-  ): Promise<ReportResponseDto> {
+  async getReportById(@Param('id', ParseIntPipe) id: number): Promise<ReportResponseDto> {
     return this.reportService.getReportById(id);
   }
 
   @Get(':id/download')
-  async downloadReport(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response
-  ): Promise<void> {
+  async downloadReport(@Param('id', ParseIntPipe) id: number, @Res() res: Response): Promise<void> {
     try {
       const { filePath, filename } = await this.reportService.downloadReport(id);
-      
-      // Set appropriate headers based on file type
-      const fileExtension = filename.split('.').pop()?.toLowerCase();
-      let contentType = 'application/octet-stream';
-      
-      switch (fileExtension) {
-        case 'pdf':
-          contentType = 'application/pdf';
-          break;
-        case 'csv':
-          contentType = 'text/csv';
-          break;
-        case 'xlsx':
-          contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-          break;
+
+      const fileExtension = filename.split('.').pop()?.toLowerCase() ?? '';
+      const contentType = CONTENT_TYPES[fileExtension] ?? 'application/octet-stream';
+
+      let fileSize: number;
+      try {
+        fileSize = statSync(filePath).size;
+      } catch {
+        res.status(HttpStatus.NOT_FOUND).json({
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Report file not found on disk',
+        });
+        return;
       }
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      
-      const fileContent = readFileSync(filePath);
-      res.send(fileContent);
-      
+      res.setHeader('Content-Length', fileSize);
+
+      const fileStream = createReadStream(filePath);
+      fileStream.pipe(res);
+
+      fileStream.on('error', () => {
+        if (!res.headersSent) {
+          res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Failed to stream report file',
+          });
+        }
+      });
     } catch (error) {
       if (error instanceof BadRequestException) {
         res.status(HttpStatus.BAD_REQUEST).json({
           statusCode: HttpStatus.BAD_REQUEST,
           message: error.message,
-        });
-      } else if (error.code === 'ENOENT') {
-        res.status(HttpStatus.NOT_FOUND).json({
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Report file not found',
         });
       } else {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -107,12 +113,21 @@ export class ReportController {
 
   @Get(':id/status')
   async getReportStatus(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<{ status: string; estimatedCompletionTime?: Date }> {
     const report = await this.reportService.getReportById(id);
     return {
       status: report.status,
       estimatedCompletionTime: report.estimatedCompletionTime,
     };
+  }
+
+  @Delete(':id')
+  async deleteReport(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: { userId: number },
+  ): Promise<{ message: string }> {
+    await this.reportService.deleteReport(id, user.userId);
+    return { message: `Report ${id} deleted successfully` };
   }
 }

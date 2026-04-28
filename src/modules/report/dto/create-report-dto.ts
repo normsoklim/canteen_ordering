@@ -1,19 +1,21 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import { IsEnum, IsNumber, IsDateString, IsOptional } from 'class-validator';
+import { ReportType } from '../enums/report-type.enum';
+import { ExportFormat } from '../enums/export-format.enum';
 
 export class CreateReportDto {
-    @PrimaryGeneratedColumn({name:'report_id'})
-    id: number
+  @IsEnum(ReportType)
+  reportType: ReportType;
 
-    @Column()
-    reportType: string
+  @IsNumber()
+  generatedBy: number;
 
-    @Column()
-    generatedBy: number
+  @IsDateString()
+  periodStart: string;
 
-    @Column()
-    period_start:Date
+  @IsDateString()
+  periodEnd: string;
 
-    @Column()
-    period_end:Date
-
+  @IsOptional()
+  @IsEnum(ExportFormat)
+  exportFormat?: ExportFormat = ExportFormat.PDF;
 }

@@ -1,5 +1,6 @@
 export enum ReportType {
-    PDF = 'PDF',
-    EXCEL = 'EXCEL',
-    CSV = 'CSV'
+  SALES = 'sales',
+  INVENTORY = 'inventory',
+  PAYMENT = 'payment',
+  ORDER_SUMMARY = 'order_summary',
 }

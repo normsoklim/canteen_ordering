@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen Report Testing</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    /* ===== LOGIN PAGE ===== */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-card .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-card .logo h1 {
+      font-size: 28px;
+      color: #1a1a2e;
+      font-weight: 700;
+    }
+
+    .login-card .logo p {
+      color: #888;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .login-card .logo .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline: none;
+      background: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #6c5ce7;
+      box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e23636, #c0392b);
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(226, 54, 54, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #fdcb6e, #e17055);
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(225, 112, 85, 0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #6c5ce7;
+      color: #6c5ce7;
+    }
+
+    .btn-outline:hover {
+      background: #6c5ce7;
+      color: #fff;
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 13px;
+      width: auto;
+    }
+
+    .btn-xs {
+      padding: 6px 12px;
+      font-size: 12px;
+      width: auto;
+      border-radius: 6px;
+    }
+
+    .error-message {
+      background: #ffe0e0;
+      color: #c0392b;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 14px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .navbar .brand span {
+      color: #6c5ce7;
+    }
+
+    .navbar .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .navbar .user-info .user-email {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .navbar .user-info .logout-btn {
+      padding: 8px 18px;
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .navbar .user-info .logout-btn:hover {
+      background: #e23636;
+      color: #fff;
+      border-color: #e23636;
+    }
+
+    .content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px;
+    }
+
+    /* ===== TABS ===== */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-header h3 {
+      font-size: 18px;
+      color: #1a1a2e;
+      font-weight: 700;
+    }
+
+    .card-header .subtitle {
+      color: #888;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    /* ===== FORM GRID ===== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .form-grid .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .form-row .btn {
+      width: auto;
+      min-width: 160px;
+    }
+
+    /* ===== SUMMARY CARDS ===== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #f8f7ff, #ede9fe);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid rgba(108, 92, 231, 0.1);
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .summary-card .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .summary-card .value.revenue {
+      color: #00b894;
+    }
+
+    .summary-card .value.orders {
+      color: #6c5ce7;
+    }
+
+    .summary-card .value.items {
+      color: #e17055;
+    }
+
+    .summary-card .value.avg {
+      color: #0984e3;
+    }
+
+    /* ===== TABLES ===== */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table thead {
+      background: linear-gradient(135deg, #1a1a2e, #302b63);
+    }
+
+    .data-table thead th {
+      padding: 14px 16px;
+      text-align: left;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
+    }
+
+    .data-table tbody tr:hover {
+      background: #f8f7ff;
+    }
+
+    .data-table tbody td {
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    .data-table tbody td.amount {
+      font-weight: 600;
+      color: #00b894;
+    }
+
+    /* ===== STATUS BADGES ===== */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-processing {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-completed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-failed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-paid {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    /* ===== REPORT TYPE BADGES ===== */
+    .type-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .type-sales {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .type-inventory {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .type-payment {
+      background: #e8daef;
+      color: #6c3483;
+    }
+
+    .type-order_summary {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    /* ===== FORMAT BADGES ===== */
+    .format-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .format-PDF {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .format-EXCEL {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .format-CSV {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      animation: modalIn 0.3s ease;
+    }
+
+    .modal-wide {
+      max-width: 900px;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h3 {
+      font-size: 22px;
+      color: #1a1a2e;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+      background: #e23636;
+      color: #fff;
+    }
+
+    /* ===== DETAIL INFO ===== */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .detail-item {
+      background: #f8f7ff;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .detail-item .detail-label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .detail-item .detail-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    /* ===== TOAST ===== */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+    }
+
+    .toast {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      animation: toastIn 0.3s ease;
+      min-width: 280px;
+    }
+
+    .toast.success {
+      border-left: 4px solid #00b894;
+    }
+
+    .toast.error {
+      border-left: 4px solid #e23636;
+    }
+
+    .toast.info {
+      border-left: 4px solid #6c5ce7;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* ===== SECTION HEADER ===== */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+      font-size: 24px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .section-header .subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* ===== ACTION BUTTONS GROUP ===== */
+    .action-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ===== PAGINATION ===== */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .pagination button {
+      padding: 8px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background: #6c5ce7;
+      color: #fff;
+      border-color: #6c5ce7;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pagination .page-info {
+      font-size: 13px;
+      color: #888;
+      padding: 0 12px;
+    }
+
+    /* ===== RAW JSON ===== */
+    .json-viewer {
+      background: #1a1a2e;
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .json-viewer pre {
+      color: #a29bfe;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ===== RANK BADGE ===== */
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .rank-1 {
+      background: linear-gradient(135deg, #ffd700, #ffb700);
+      color: #7c5800;
+    }
+
+    .rank-2 {
+      background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+      color: #444;
+    }
+
+    .rank-3 {
+      background: linear-gradient(135deg, #cd7f32, #a0622e);
+      color: #fff;
+    }
+
+    .rank-default {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-bar .fill.processing {
+      background: linear-gradient(90deg, #fdcb6e, #e17055);
+      animation: progressPulse 1.5s ease-in-out infinite;
+    }
+
+    .progress-bar .fill.completed {
+      background: linear-gradient(90deg, #00b894, #00cec9);
+    }
+
+    .progress-bar .fill.failed {
+      background: linear-gradient(90deg, #e23636, #c0392b);
+    }
+
+    @keyframes progressPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .content {
+        padding: 16px;
+      }
+
+      .data-table {
+        font-size: 13px;
+      }
+
+      .data-table thead th,
+      .data-table tbody td {
+        padding: 10px 12px;
+      }
+
+      .modal {
+        padding: 24px;
+      }
+
+      .navbar {
+        padding: 12px 16px;
+      }
+
+      .navbar .user-info .user-email {
+        display: none;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .tabs {
+        flex-wrap: wrap;
+      }
+
+      .tab-btn {
+        font-size: 12px;
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="loginPage" class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <h1>📊 Canteen</h1>
+        <p>Report Testing Dashboard</p>
+        <span class="badge">REPORTING API</span>
+      </div>
+
+      <div id="loginError" class="error-message"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter your email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="dashboardPage" class="dashboard">
+    <nav class="navbar">
+      <div class="brand">📊 Canteen <span>Reports</span></div>
+      <div class="user-info">
+        <span class="user-email" id="userEmail"></span>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="content">
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="generate">📝 Generate Report</button>
+        <button class="tab-btn" data-tab="preview">👁️ Preview Report</button>
+        <button class="tab-btn" data-tab="history">📋 Report History</button>
+      </div>
+
+      <!-- ===== GENERATE TAB ===== -->
+      <div id="tab-generate" class="tab-content active">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Generate New Report</h3>
+              <div class="subtitle">Create a report by selecting type, date range, and export format</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="genReportType">Report Type</label>
+              <select id="genReportType">
+                <option value="sales">📊 Sales Report</option>
+                <option value="inventory">📦 Inventory Report</option>
+                <option value="payment">💳 Payment Report</option>
+                <option value="order_summary">📋 Order Summary</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="genExportFormat">Export Format</label>
+              <select id="genExportFormat">
+                <option value="PDF">📄 PDF</option>
+                <option value="EXCEL">📊 Excel (XLSX)</option>
+                <option value="CSV">📝 CSV</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="genStartDate">Start Date</label>
+              <input type="date" id="genStartDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="genEndDate">End Date</label>
+              <input type="date" id="genEndDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="genCategoryIds">Category IDs <span style="font-weight:400;color:#aaa">(comma-separated)</span></label>
+              <input type="text" id="genCategoryIds" placeholder="e.g. 1,2,3">
+            </div>
+
+            <div class="form-group">
+              <label for="genMenuItemIds">Menu Item IDs <span style="font-weight:400;color:#aaa">(comma-separated)</span></label>
+              <input type="text" id="genMenuItemIds" placeholder="e.g. 1,2,3">
+            </div>
+
+            <div class="form-group">
+              <label for="genStatus">Order Status Filter</label>
+              <select id="genStatus">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="PREPARING">Preparing</option>
+                <option value="READY">Ready</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="genSortBy">Sort By</label>
+              <select id="genSortBy">
+                <option value="totalRevenue">Total Revenue</option>
+                <option value="totalQuantitySold">Quantity Sold</option>
+                <option value="orderCount">Order Count</option>
+                <option value="menuItemName">Menu Item Name</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="genSortOrder">Sort Order</label>
+              <select id="genSortOrder">
+                <option value="DESC">Descending</option>
+                <option value="ASC">Ascending</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="genLimit">Limit</label>
+              <input type="number" id="genLimit" value="50" min="1" max="100">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <button class="btn btn-primary" id="generateBtn" onclick="generateReport()">
+              🚀 Generate Report
+            </button>
+            <button class="btn btn-outline" onclick="resetGenerateForm()">
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Generate Result -->
+        <div id="generateResult" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>✅ Report Generated</h3>
+                <div class="subtitle">Your report has been queued for generation</div>
+              </div>
+            </div>
+            <div id="generateResultContent"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PREVIEW TAB ===== -->
+      <div id="tab-preview" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>Preview Report</h3>
+              <div class="subtitle">Get a quick preview of report data without generating a file</div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="prevReportType">Report Type</label>
+              <select id="prevReportType">
+                <option value="sales">📊 Sales Report</option>
+                <option value="inventory">📦 Inventory Report</option>
+                <option value="payment">💳 Payment Report</option>
+                <option value="order_summary">📋 Order Summary</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prevStartDate">Start Date</label>
+              <input type="date" id="prevStartDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="prevEndDate">End Date</label>
+              <input type="date" id="prevEndDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="prevCategoryIds">Category IDs <span style="font-weight:400;color:#aaa">(comma-separated)</span></label>
+              <input type="text" id="prevCategoryIds" placeholder="e.g. 1,2,3">
+            </div>
+
+            <div class="form-group">
+              <label for="prevMenuItemIds">Menu Item IDs <span style="font-weight:400;color:#aaa">(comma-separated)</span></label>
+              <input type="text" id="prevMenuItemIds" placeholder="e.g. 1,2,3">
+            </div>
+
+            <div class="form-group">
+              <label for="prevStatus">Order Status Filter</label>
+              <select id="prevStatus">
+                <option value="">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="PREPARING">Preparing</option>
+                <option value="READY">Ready</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prevSortBy">Sort By</label>
+              <select id="prevSortBy">
+                <option value="totalRevenue">Total Revenue</option>
+                <option value="totalQuantitySold">Quantity Sold</option>
+                <option value="orderCount">Order Count</option>
+                <option value="menuItemName">Menu Item Name</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prevSortOrder">Sort Order</label>
+              <select id="prevSortOrder">
+                <option value="DESC">Descending</option>
+                <option value="ASC">Ascending</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="prevLimit">Limit</label>
+              <input type="number" id="prevLimit" value="50" min="1" max="100">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <button class="btn btn-primary" onclick="previewReport()">
+              👁️ Preview Report
+            </button>
+            <button class="btn btn-outline" onclick="resetPreviewForm()">
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Preview Results -->
+        <div id="previewResult" style="display:none;">
+          <!-- Summary Cards -->
+          <div class="summary-grid" id="previewSummary"></div>
+
+          <!-- Top Items Table -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>🏆 Top Selling Items</h3>
+                <div class="subtitle" id="previewPageInfo"></div>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Menu Item</th>
+                    <th>Category</th>
+                    <th>Qty Sold</th>
+                    <th>Revenue</th>
+                    <th>Orders</th>
+                  </tr>
+                </thead>
+                <tbody id="previewTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Raw JSON -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>🔍 Raw JSON Response</h3>
+              </div>
+              <button class="btn btn-xs btn-outline" onclick="toggleRawJson('previewRawJson')">Toggle JSON</button>
+            </div>
+            <div id="previewRawJson" class="json-viewer" style="display:none;">
+              <pre id="previewJsonContent"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== HISTORY TAB ===== -->
+      <div id="tab-history" class="tab-content">
+        <div class="section-header">
+          <div>
+            <h2>Report History</h2>
+            <div class="subtitle">View and manage previously generated reports</div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="fetchReports()" style="width:auto;">
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div class="card">
+          <div id="reportsLoading" class="empty-state">
+            <div class="icon">⏳</div>
+            <p>Loading reports...</p>
+          </div>
+          <div id="reportsEmpty" class="empty-state" style="display:none;">
+            <div class="icon">📋</div>
+            <p>No reports found. Generate your first report!</p>
+          </div>
+          <div id="reportsTableWrapper" style="display:none;">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Period</th>
+                    <th>Revenue</th>
+                    <th>Orders</th>
+                    <th>Format</th>
+                    <th>Status</th>
+                    <th>Generated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="reportsPagination"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REPORT DETAIL MODAL ===== -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3>📋 Report Detail</h3>
+        <button class="modal-close" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div id="detailModalContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ===== CONFIG =====
+    const API_BASE = window.location.origin || 'http://localhost:3000';
+
+    // ===== STATE =====
+    let authToken = null;
+    let currentUser = null;
+    let reportsCurrentPage = 1;
+    let reportsTotalPages = 1;
+
+    // ===== API HELPER =====
+    async function apiRequest(endpoint, options = {}) {
+      const url = `${API_BASE}${endpoint}`;
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      // For file downloads, return blob directly
+      if (options.rawResponse) {
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || 'Download failed');
+        }
+        return response;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const message = data.message || data.error || 'Request failed';
+        throw new Error(Array.isArray(message) ? message.join(', ') : message);
+      }
+
+      return data;
+    }
+
+    /**
+     * Unwrap the TransformInterceptor's { success, data } wrapper.
+     */
+    function unwrapResponse(response) {
+      let result = response;
+      if (result && result.success === true && result.data !== undefined) {
+        result = result.data;
+      }
+      if (result && result.success === true && result.data !== undefined && typeof result.data === 'object') {
+        result = result.data;
+      }
+      return result;
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ===== TABS =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const tabId = `tab-${btn.dataset.tab}`;
+        document.getElementById(tabId).classList.add('active');
+
+        // Load reports when switching to history tab
+        if (btn.dataset.tab === 'history') {
+          fetchReports();
+        }
+      });
+    });
+
+    // ===== AUTH =====
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        loginError.textContent = 'Please enter email and password';
+        loginError.style.display = 'block';
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="loading-spinner"></span> Signing in...';
+      loginError.style.display = 'none';
+
+      try {
+        const response = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        });
+
+        const loginData = unwrapResponse(response);
+        const token = loginData.access_token;
+
+        if (!token) {
+          throw new Error('No token received from server');
+        }
+
+        authToken = token;
+        localStorage.setItem('authToken', token);
+
+        if (loginData.user) {
+          currentUser = loginData.user;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        } else {
+          try {
+            const profile = await apiRequest('/auth/profile');
+            currentUser = unwrapResponse(profile);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+          } catch (err) {
+            console.warn('Could not fetch profile', err);
+          }
+        }
+
+        showDashboard();
+        showToast('Login successful!', 'success');
+        setDefaultDates();
+      } catch (error) {
+        loginError.textContent = error.message;
+        loginError.style.display = 'block';
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Sign In';
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      showLogin();
+      showToast('Logged out', 'info');
+    });
+
+    // ===== PAGE SWITCHING =====
+    function showLogin() {
+      document.getElementById('loginPage').style.display = 'flex';
+      document.getElementById('dashboardPage').style.display = 'none';
+    }
+
+    function showDashboard() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('dashboardPage').style.display = 'block';
+
+      if (currentUser) {
+        document.getElementById('userEmail').textContent = currentUser.email || currentUser.username || 'User';
+      }
+    }
+
+    // ===== SET DEFAULT DATES =====
+    function setDefaultDates() {
+      const today = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+
+      const formatDate = (d) => d.toISOString().split('T')[0];
+
+      document.getElementById('genStartDate').value = formatDate(thirtyDaysAgo);
+      document.getElementById('genEndDate').value = formatDate(today);
+      document.getElementById('prevStartDate').value = formatDate(thirtyDaysAgo);
+      document.getElementById('prevEndDate').value = formatDate(today);
+    }
+
+    // ===== GENERATE REPORT =====
+    async function generateReport() {
+      const btn = document.getElementById('generateBtn');
+      const reportType = document.getElementById('genReportType').value;
+      const exportFormat = document.getElementById('genExportFormat').value;
+      const startDate = document.getElementById('genStartDate').value;
+      const endDate = document.getElementById('genEndDate').value;
+      const categoryIds = document.getElementById('genCategoryIds').value.trim();
+      const menuItemIds = document.getElementById('genMenuItemIds').value.trim();
+      const status = document.getElementById('genStatus').value;
+      const sortBy = document.getElementById('genSortBy').value;
+      const sortOrder = document.getElementById('genSortOrder').value;
+      const limit = parseInt(document.getElementById('genLimit').value) || 50;
+
+      if (!startDate || !endDate) {
+        showToast('Please select start and end dates', 'error');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showToast('Start date must be before end date', 'error');
+        return;
+      }
+
+      const body = {
+        reportType,
+        exportFormat,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        sortBy,
+        sortOrder,
+        limit,
+      };
+
+      if (categoryIds) {
+        body.categoryIds = categoryIds;
+      }
+      if (menuItemIds) {
+        body.menuItemIds = menuItemIds;
+      }
+      if (status) {
+        body.status = status;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+
+      try {
+        const response = await apiRequest('/reports/generate', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+
+        const data = unwrapResponse(response);
+        showGenerateResult(data);
+        showToast('Report generation started!', 'success');
+      } catch (error) {
+        showToast(`Generation failed: ${error.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🚀 Generate Report';
+      }
+    }
+
+    function showGenerateResult(data) {
+      const container = document.getElementById('generateResultContent');
+      const resultDiv = document.getElementById('generateResult');
+      resultDiv.style.display = 'block';
+
+      const statusClass = `status-${data.status || 'processing'}`;
+      const typeClass = `type-${data.reportType || 'sales'}`;
+      const formatClass = `format-${data.exportFormat || 'PDF'}`;
+
+      container.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Report ID</div>
+            <div class="detail-value">#${data.id || '-'}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Report Type</div>
+            <div class="detail-value"><span class="type-badge ${typeClass}">${formatReportType(data.reportType)}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Period</div>
+            <div class="detail-value">${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Export Format</div>
+            <div class="detail-value"><span class="format-badge ${formatClass}">${data.exportFormat || 'PDF'}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Revenue</div>
+            <div class="detail-value" style="color:#00b894;">$${formatNumber(data.totalRevenue)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Orders</div>
+            <div class="detail-value">${data.totalOrders || 0}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Paid Transactions</div>
+            <div class="detail-value">${data.paidTransactions || 0}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value"><span class="status-badge ${statusClass}">${data.status || 'processing'}</span></div>
+          </div>
+        </div>
+        ${data.status === 'processing' ? `
+          <div class="progress-bar">
+            <div class="fill processing" style="width: 60%;"></div>
+          </div>
+          <p style="margin-top:8px;font-size:13px;color:#888;">Report is being generated. Check the History tab for status updates.</p>
+          <div class="form-row" style="margin-top:12px;">
+            <button class="btn btn-sm btn-warning" onclick="checkReportStatus(${data.id})">🔄 Check Status</button>
+          </div>
+        ` : ''}
+        ${data.status === 'completed' ? `
+          <div class="form-row" style="margin-top:12px;">
+            <button class="btn btn-sm btn-success" onclick="downloadReport(${data.id})">⬇️ Download Report</button>
+            <button class="btn btn-sm btn-outline" onclick="viewReportDetail(${data.id})">📋 View Detail</button>
+          </div>
+        ` : ''}
+        <div style="margin-top:16px;">
+          <div class="json-viewer" style="display:none;" id="generateRawJson">
+            <pre>${syntaxHighlightJSON(JSON.stringify(data, null, 2))}</pre>
+          </div>
+          <button class="btn btn-xs btn-outline" onclick="toggleRawJson('generateRawJson')" style="margin-top:8px;">Toggle JSON</button>
+        </div>
+      `;
+
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ===== PREVIEW REPORT =====
+    async function previewReport() {
+      const reportType = document.getElementById('prevReportType').value;
+      const startDate = document.getElementById('prevStartDate').value;
+      const endDate = document.getElementById('prevEndDate').value;
+      const categoryIds = document.getElementById('prevCategoryIds').value.trim();
+      const menuItemIds = document.getElementById('prevMenuItemIds').value.trim();
+      const status = document.getElementById('prevStatus').value;
+      const sortBy = document.getElementById('prevSortBy').value;
+      const sortOrder = document.getElementById('prevSortOrder').value;
+      const limit = parseInt(document.getElementById('prevLimit').value) || 50;
+
+      if (!startDate || !endDate) {
+        showToast('Please select start and end dates', 'error');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showToast('Start date must be before end date', 'error');
+        return;
+      }
+
+      const body = {
+        reportType,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        sortBy,
+        sortOrder,
+        limit,
+      };
+
+      if (categoryIds) {
+        body.categoryIds = categoryIds;
+      }
+      if (menuItemIds) {
+        body.menuItemIds = menuItemIds;
+      }
+      if (status) {
+        body.status = status;
+      }
+
+      try {
+        const response = await apiRequest('/reports/preview', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+
+        const data = unwrapResponse(response);
+        showPreviewResult(data);
+        showToast('Preview loaded!', 'success');
+      } catch (error) {
+        showToast(`Preview failed: ${error.message}`, 'error');
+      }
+    }
+
+    function showPreviewResult(data) {
+      const resultDiv = document.getElementById('previewResult');
+      resultDiv.style.display = 'block';
+
+      // Summary cards
+      const summary = data.summary || {};
+      document.getElementById('previewSummary').innerHTML = `
+        <div class="summary-card">
+          <div class="label">Total Revenue</div>
+          <div class="value revenue">$${formatNumber(summary.totalRevenue)}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Total Orders</div>
+          <div class="value orders">${summary.totalOrders || 0}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Items Sold</div>
+          <div class="value items">${summary.totalItemsSold || 0}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Avg Order Value</div>
+          <div class="value avg">$${formatNumber(summary.averageOrderValue)}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Paid Transactions</div>
+          <div class="value" style="color:#00b894;">${summary.paidTransactions || 0}</div>
+        </div>
+        <div class="summary-card">
+          <div class="label">Period</div>
+          <div class="value" style="font-size:14px;color:#6c5ce7;">${summary.period || '-'}</div>
+        </div>
+      `;
+
+      // Top items table
+      const items = data.topItems || [];
+      document.getElementById('previewPageInfo').textContent =
+        `Page ${data.currentPage || 1} of ${data.totalPages || 1} • ${items.length} items`;
+
+      const tbody = document.getElementById('previewTableBody');
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center;padding:40px;color:#999;">
+              No items found for the selected criteria
+            </td>
+          </tr>
+        `;
+      } else {
+        items.forEach((item) => {
+          const rank = item.rank || 0;
+          const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-default';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+            <td><strong>${escapeHtml(item.menuItemName || '-')}</strong></td>
+            <td>${escapeHtml(item.categoryName || '-')}</td>
+            <td>${item.totalQuantitySold || 0}</td>
+            <td class="amount">$${formatNumber(item.totalRevenue)}</td>
+            <td>${item.orderCount || 0}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Raw JSON
+      document.getElementById('previewJsonContent').innerHTML =
+        syntaxHighlightJSON(JSON.stringify(data, null, 2));
+
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ===== FETCH REPORTS (HISTORY) =====
+    async function fetchReports(page = 1) {
+      reportsCurrentPage = page;
+
+      const loading = document.getElementById('reportsLoading');
+      const empty = document.getElementById('reportsEmpty');
+      const tableWrapper = document.getElementById('reportsTableWrapper');
+
+      loading.style.display = 'block';
+      empty.style.display = 'none';
+      tableWrapper.style.display = 'none';
+
+      try {
+        const response = await apiRequest(`/reports?page=${page}&limit=10`);
+        const data = unwrapResponse(response);
+
+        const reports = data.reports || [];
+        const total = data.total || 0;
+        const totalPages = data.totalPages || 1;
+        reportsTotalPages = totalPages;
+
+        if (reports.length === 0) {
+          loading.style.display = 'none';
+          empty.style.display = 'block';
+          return;
+        }
+
+        renderReportsTable(reports);
+        renderPagination(total, page, totalPages);
+
+        loading.style.display = 'none';
+        tableWrapper.style.display = 'block';
+      } catch (error) {
+        loading.style.display = 'none';
+        empty.style.display = 'block';
+        empty.querySelector('p').textContent = `Error: ${error.message}`;
+        showToast(`Failed to fetch reports: ${error.message}`, 'error');
+      }
+    }
+
+    function renderReportsTable(reports) {
+      const tbody = document.getElementById('reportsTableBody');
+      tbody.innerHTML = '';
+
+      reports.forEach((report) => {
+        const statusClass = `status-${report.status || 'processing'}`;
+        const typeClass = `type-${report.reportType || 'sales'}`;
+        const formatClass = `format-${report.exportFormat || 'PDF'}`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>#${report.id}</strong></td>
+          <td><span class="type-badge ${typeClass}">${formatReportType(report.reportType)}</span></td>
+          <td style="font-size:12px;">${formatDate(report.periodStart)}<br>— ${formatDate(report.periodEnd)}</td>
+          <td class="amount">$${formatNumber(report.totalRevenue)}</td>
+          <td>${report.totalOrders || 0}</td>
+          <td><span class="format-badge ${formatClass}">${report.exportFormat || 'PDF'}</span></td>
+          <td><span class="status-badge ${statusClass}">${report.status || 'processing'}</span></td>
+          <td style="font-size:12px;">${formatDateTime(report.generatedAt)}</td>
+          <td>
+            <div class="action-group">
+              <button class="btn btn-xs btn-outline" onclick="viewReportDetail(${report.id})" title="View Detail">📋</button>
+              ${report.status === 'completed' ? `<button class="btn btn-xs btn-success" onclick="downloadReport(${report.id})" title="Download">⬇️</button>` : ''}
+              <button class="btn btn-xs btn-danger" onclick="deleteReport(${report.id})" title="Delete">🗑️</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderPagination(total, currentPage, totalPages) {
+      const container = document.getElementById('reportsPagination');
+      container.innerHTML = `
+        <button ${currentPage <= 1 ? 'disabled' : ''} onclick="fetchReports(${currentPage - 1})">← Prev</button>
+        <span class="page-info">Page ${currentPage} of ${totalPages} (${total} total)</span>
+        <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="fetchReports(${currentPage + 1})">Next →</button>
+      `;
+    }
+
+    // ===== VIEW REPORT DETAIL =====
+    async function viewReportDetail(id) {
+      try {
+        const response = await apiRequest(`/reports/${id}`);
+        const data = unwrapResponse(response);
+        showDetailModal(data);
+      } catch (error) {
+        showToast(`Failed to load report: ${error.message}`, 'error');
+      }
+    }
+
+    function showDetailModal(data) {
+      const modal = document.getElementById('detailModal');
+      const content = document.getElementById('detailModalContent');
+
+      const statusClass = `status-${data.status || 'processing'}`;
+      const typeClass = `type-${data.reportType || 'sales'}`;
+      const formatClass = `format-${data.exportFormat || 'PDF'}`;
+
+      let itemsHtml = '';
+      if (data.reportItems && data.reportItems.length > 0) {
+        itemsHtml = `
+          <h4 style="margin:20px 0 12px;font-size:16px;color:#1a1a2e;">📊 Report Items</h4>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Menu Item</th>
+                  <th>Category</th>
+                  <th>Qty Sold</th>
+                  <th>Revenue</th>
+                  <th>Orders</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.reportItems.map(item => {
+                  const rank = item.rank || 0;
+                  const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-default';
+                  return `
+                    <tr>
+                      <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+                      <td><strong>${escapeHtml(item.menuItemName || '-')}</strong></td>
+                      <td>${escapeHtml(item.categoryName || '-')}</td>
+                      <td>${item.totalQuantitySold || 0}</td>
+                      <td class="amount">$${formatNumber(item.totalRevenue)}</td>
+                      <td>${item.orderCount || 0}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      content.innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Report ID</div>
+            <div class="detail-value">#${data.id}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Report Type</div>
+            <div class="detail-value"><span class="type-badge ${typeClass}">${formatReportType(data.reportType)}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Period</div>
+            <div class="detail-value" style="font-size:14px;">${formatDate(data.periodStart)} — ${formatDate(data.periodEnd)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Generated By</div>
+            <div class="detail-value">User #${data.generatedBy || '-'}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Revenue</div>
+            <div class="detail-value" style="color:#00b894;">$${formatNumber(data.totalRevenue)}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Total Orders</div>
+            <div class="detail-value">${data.totalOrders || 0}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Paid Transactions</div>
+            <div class="detail-value">${data.paidTransactions || 0}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Export Format</div>
+            <div class="detail-value"><span class="format-badge ${formatClass}">${data.exportFormat || 'PDF'}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value"><span class="status-badge ${statusClass}">${data.status || 'processing'}</span></div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Generated At</div>
+            <div class="detail-value" style="font-size:14px;">${formatDateTime(data.generatedAt)}</div>
+          </div>
+        </div>
+
+        ${data.status === 'processing' ? `
+          <div class="progress-bar">
+            <div class="fill processing" style="width: 60%;"></div>
+          </div>
+          <div class="form-row" style="margin-top:12px;">
+            <button class="btn btn-sm btn-warning" onclick="checkReportStatus(${data.id})">🔄 Check Status</button>
+          </div>
+        ` : ''}
+
+        ${data.status === 'completed' ? `
+          <div class="form-row" style="margin-top:12px;">
+            <button class="btn btn-sm btn-success" onclick="downloadReport(${data.id})">⬇️ Download Report</button>
+          </div>
+        ` : ''}
+
+        ${itemsHtml}
+
+        <div style="margin-top:16px;">
+          <h4 style="margin-bottom:8px;font-size:16px;color:#1a1a2e;">🔍 Raw JSON</h4>
+          <div class="json-viewer" id="detailRawJson" style="display:none;">
+            <pre>${syntaxHighlightJSON(JSON.stringify(data, null, 2))}</pre>
+          </div>
+          <button class="btn btn-xs btn-outline" onclick="toggleRawJson('detailRawJson')" style="margin-top:8px;">Toggle JSON</button>
+        </div>
+      `;
+
+      modal.classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // Click outside modal to close
+    document.getElementById('detailModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('detailModal')) {
+        closeDetailModal();
+      }
+    });
+
+    // ===== CHECK REPORT STATUS =====
+    async function checkReportStatus(id) {
+      try {
+        const response = await apiRequest(`/reports/${id}/status`);
+        const data = unwrapResponse(response);
+        showToast(`Report #${id} status: ${data.status}`, data.status === 'completed' ? 'success' : 'info');
+
+        // Refresh the detail if modal is open
+        if (document.getElementById('detailModal').classList.contains('active')) {
+          viewReportDetail(id);
+        }
+
+        // Refresh history table
+        fetchReports(reportsCurrentPage);
+      } catch (error) {
+        showToast(`Status check failed: ${error.message}`, 'error');
+      }
+    }
+
+    // ===== DOWNLOAD REPORT =====
+    async function downloadReport(id) {
+      try {
+        showToast('Starting download...', 'info');
+
+        const response = await fetch(`${API_BASE}/reports/${id}/download`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Download failed' }));
+          throw new Error(errorData.message || 'Download failed');
+        }
+
+        const blob = await response.blob();
+
+        // Extract filename from Content-Disposition header
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `report-${id}`;
+        if (contentDisposition) {
+          const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          if (match && match[1]) {
+            filename = match[1].replace(/['"]/g, '');
+          }
+        }
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showToast('Download started!', 'success');
+      } catch (error) {
+        showToast(`Download failed: ${error.message}`, 'error');
+      }
+    }
+
+    // ===== DELETE REPORT =====
+    async function deleteReport(id) {
+      if (!confirm(`Are you sure you want to delete report #${id}?`)) {
+        return;
+      }
+
+      try {
+        const response = await apiRequest(`/reports/${id}`, {
+          method: 'DELETE',
+        });
+        const data = unwrapResponse(response);
+        showToast(`Report #${id} deleted successfully`, 'success');
+        fetchReports(reportsCurrentPage);
+      } catch (error) {
+        showToast(`Delete failed: ${error.message}`, 'error');
+      }
+    }
+
+    // ===== FORM RESET =====
+    function resetGenerateForm() {
+      document.getElementById('genReportType').value = 'sales';
+      document.getElementById('genExportFormat').value = 'PDF';
+      document.getElementById('genCategoryIds').value = '';
+      document.getElementById('genMenuItemIds').value = '';
+      document.getElementById('genStatus').value = '';
+      document.getElementById('genSortBy').value = 'totalRevenue';
+      document.getElementById('genSortOrder').value = 'DESC';
+      document.getElementById('genLimit').value = '50';
+      setDefaultDates();
+      document.getElementById('generateResult').style.display = 'none';
+      showToast('Form reset', 'info');
+    }
+
+    function resetPreviewForm() {
+      document.getElementById('prevReportType').value = 'sales';
+      document.getElementById('prevCategoryIds').value = '';
+      document.getElementById('prevMenuItemIds').value = '';
+      document.getElementById('prevStatus').value = '';
+      document.getElementById('prevSortBy').value = 'totalRevenue';
+      document.getElementById('prevSortOrder').value = 'DESC';
+      document.getElementById('prevLimit').value = '50';
+      setDefaultDates();
+      document.getElementById('previewResult').style.display = 'none';
+      showToast('Form reset', 'info');
+    }
+
+    // ===== TOGGLE RAW JSON =====
+    function toggleRawJson(elementId) {
+      const el = document.getElementById(elementId);
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // ===== FORMATTING HELPERS =====
+    function formatReportType(type) {
+      const types = {
+        sales: '📊 Sales',
+        inventory: '📦 Inventory',
+        payment: '💳 Payment',
+        order_summary: '📋 Order Summary',
+      };
+      return types[type] || type || '-';
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function formatDateTime(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+    }
+
+    function formatNumber(num) {
+      if (num === null || num === undefined) return '0.00';
+      return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function syntaxHighlightJSON(json) {
+      json = escapeHtml(json);
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        (match) => {
+          let cls = 'color: #e17055;'; // number
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = 'color: #d63031;'; // key
+            } else {
+              cls = 'color: #00b894;'; // string
+            }
+          } else if (/true|false/.test(match)) {
+            cls = 'color: #0984e3;'; // boolean
+          } else if (/null/.test(match)) {
+            cls = 'color: #636e72;'; // null
+          }
+          return `<span style="${cls}">${match}</span>`;
+        }
+      );
+    }
+
+    // ===== INIT =====
+    (function init() {
+      const savedToken = localStorage.getItem('authToken');
+      const savedUser = localStorage.getItem('currentUser');
+
+      if (savedToken) {
+        authToken = savedToken;
+        if (savedUser) {
+          try {
+            currentUser = JSON.parse(savedUser);
+          } catch (e) {
+            currentUser = null;
+          }
+        }
+
+        // Verify token is still valid
+        apiRequest('/auth/profile')
+          .then((profile) => {
+            currentUser = unwrapResponse(profile);
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showDashboard();
+            setDefaultDates();
+          })
+          .catch(() => {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            showLogin();
+          });
+      } else {
+        showLogin();
+      }
+    })();
+  </script>
+</body>
+</html>

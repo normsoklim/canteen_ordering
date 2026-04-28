@@ -9,6 +9,7 @@ import { OrderStatusHistory } from '../modules/orders/entities/order-status-hist
 import { Payment } from '../modules/payments/entities/payment.entity';
 import { PaymentMethod } from '../modules/payments/entities/payment-method.entity';
 import { PaymentTransaction } from '../modules/payments/entities/payment-transaction.entity';
+import { OrderTracking } from '../modules/order-tracking/entities/order-tracking.entity';
 
 export default new DataSource({
   type: 'postgres',
@@ -29,7 +30,8 @@ export default new DataSource({
     OrderStatusHistory,
     Payment,
     PaymentMethod,
-    PaymentTransaction
+    PaymentTransaction,
+    OrderTracking
   ],
   migrations: ['src/database/migrations/**/*{.ts,.js}'],
   subscribers: [],

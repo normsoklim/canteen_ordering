@@ -49,4 +49,7 @@ export class User {
 
   @Column({ nullable: true })
   emailVerifiedAt?: Date;
+
+  @Column({ nullable: true })
+  phone?: string;
 }

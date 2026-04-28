@@ -2,11 +2,12 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 import { BakongConfig } from 'src/config/bakong.config';
 
-// Import KHQR SDK
+// Import KHQR SDK correctly
 const KHQR = require('bakong-khqr');
-const { BakongKHQR } = KHQR;
+const { BakongKHQR, IndividualInfo, khqrData } = KHQR;
 
 @Injectable()
 export class BakongService {
@@ -24,7 +25,7 @@ export class BakongService {
   async generateKHQR(order: any) {
     try {
       const config = this.getBakongConfig();
-      
+
       // Validate Bakong account configuration
       const validationResult = this.validateBakongAccount(config.accountId);
       if (!validationResult.isValid) {
@@ -43,161 +44,96 @@ export class BakongService {
       if (validationResult.isPlaceholder) {
         this.logger.warn('Using placeholder Bakong account ID. QR codes will show "unknown account" when scanned. Please set up your own Bakong account.');
         this.logger.warn('Current placeholder account: ' + config.accountId + ' - This is not a real registered Bakong account.');
-        this.logger.warn('⚠️ WARNING: KHQR generation may fail with placeholder accounts. For production, use a real registered Bakong account.');
       }
 
       const transactionId = uuidv4();
-      
-      // Prepare optional data for KHQR
-      const optionalData = {
+
+      // Determine currency - use USD by default
+      const currency = order.currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
+
+      // Calculate expiration timestamp in MILLISECONDS (13 digits, required by SDK)
+      const expirationTimestamp = Date.now() + 15 * 60 * 1000; // 15 minutes from now in ms
+
+      // Build optional data for KHQR - currency and amount go in the optional object
+      const optionalData: any = {
+        amount: order.amount,
+        currency: currency,
         billNumber: order.orderId?.toString() || transactionId,
         storeLabel: config.merchantName,
         terminalLabel: 'Canteen POS',
+        expirationTimestamp: expirationTimestamp,
       };
 
-      // Try to generate KHQR using official SDK first
-      this.logger.log('Generating KHQR using official SDK...');
-      try {
-        // Initialize SDK with token first
-        const khqrInstance = new BakongKHQR({
-          token: config.token,
-          isSandbox: config.isSandbox,
-        });
-        
-        // Set expiration time (15 minutes from now)
-        const expirationTime = new Date();
-        expirationTime.setMinutes(expirationTime.getMinutes() + 15);
-        
-        // Prepare KHQR parameters with proper expiration timestamp
-        const khqrParams = {
-          bakongAccountID: config.accountId,
-          merchantName: config.merchantName,
-          merchantCity: config.merchantCity,
-          amount: order.amount,
-          currency: KHQR.khqrData.currency.usd, // Use USD currency
-          optionalData,
-          expiresAt: Math.floor(expirationTime.getTime() / 1000), // Required for dynamic KHQR
-        };
+      // Create IndividualInfo instance - this is the correct SDK API
+      const individualInfo = new IndividualInfo(
+        config.accountId,
+        config.merchantName,
+        config.merchantCity,
+        optionalData,
+      );
 
-        this.logger.log('KHQR generation parameters:', JSON.stringify(khqrParams));
-        
-        const khqr = khqrInstance.generateIndividual(khqrParams);
+      this.logger.log('Generating KHQR using official SDK with IndividualInfo...');
 
-        // Check if KHQR generation was successful
-        if (!khqr || !khqr.data || !khqr.data.md5) {
-          this.logger.error('KHQR SDK returned null or invalid response');
-          this.logger.error('KHQR response:', khqr);
-          
-          // Check if this is the expiration timestamp error
-          if (khqr && khqr.status && khqr.status.errorCode === 45) {
-            this.logger.error('❌ EXPIRATION TIMESTAMP ERROR: The Bakong SDK is rejecting the placeholder account. This requires a real registered Bakong account.');
-            this.logger.error('💡 SOLUTION: Register for a real Bakong account at https://bakong.nbc.gov.kh and update your .env file with the actual credentials.');
+      // Generate KHQR - BakongKHQR constructor only needs token and isSandbox
+      const khqrInstance = new BakongKHQR({
+        token: config.token,
+        isSandbox: config.isSandbox,
+      });
+
+      const khqr = khqrInstance.generateIndividual(individualInfo);
+
+      // Check if KHQR generation was successful
+      if (!khqr || khqr.status.code !== 0 || !khqr.data || !khqr.data.md5) {
+        this.logger.error('KHQR SDK returned error response');
+        this.logger.error('KHQR response:', JSON.stringify(khqr));
+
+        if (khqr && khqr.status && khqr.status.errorCode) {
+          this.logger.error(`KHQR Error Code: ${khqr.status.errorCode}, Message: ${khqr.status.message}`);
+
+          // Provide specific guidance for common errors
+          if (khqr.status.errorCode === 45) {
+            this.logger.error('Expiration timestamp is required for dynamic KHQR');
+          } else if (khqr.status.errorCode === 49) {
+            this.logger.error('Expiration timestamp length is invalid - must be 13 digits (milliseconds)');
+          } else if (khqr.status.errorCode === 4) {
+            this.logger.error('Amount is invalid - KHR must be integer, USD max 2 decimal places');
           }
-          
-          throw new Error('SDK returned invalid response');
         }
 
-        this.logger.log(`KHQR generated successfully with MD5: ${khqr.data.md5}`);
-
-        // Generate QR code image
-        const qrImage = await QRCode.toDataURL(khqr.data.qr, {
-          errorCorrectionLevel: 'H',
-          margin: 2,
-          width: 400,
-          color: {
-            dark: '#000000FF',
-            light: '#FFFFFFFF'
-          },
-          type: 'image/png',
-          quality: 1.0,
-        });
-
-        // Set expiration time (15 minutes)
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 15);
-
-        return {
-          transactionId,
-          khqrString: khqr.data.qr,
-          khqrHash: khqr.data.md5, // IMPORTANT: Save this for verification
-          qrImage,
-          expiresAt,
-          orderId: order.orderId,
-          amount: order.amount,
-          currency: 'USD',
-          md5: khqr.data.md5, // Critical for transaction verification
-          isFallback: false, // Flag to indicate this is a real KHQR
-        };
-      } catch (sdkError) {
-        this.logger.warn('Official SDK failed, using fallback QR generation');
-        this.logger.warn(`SDK Error: ${sdkError.message}`);
-        this.logger.warn(`SDK Error details: ${sdkError.stack || 'No stack trace'}`);
-        
-        // Try alternative approach first - maybe the SDK needs initialization
-        try {
-          this.logger.log('Attempting alternative SDK initialization...');
-          
-          // Try with different parameter format
-          const khqrInstance = new BakongKHQR({
-            token: config.token,
-            isSandbox: config.isSandbox,
-          });
-          const expirationTime = new Date();
-          expirationTime.setMinutes(expirationTime.getMinutes() + 15);
-          
-          const alternativeParams = {
-            bakongAccountID: config.accountId,
-            merchantName: config.merchantName,
-            merchantCity: config.merchantCity,
-            amount: order.amount,
-            currency: 'USD', // Try string instead of enum
-            optionalData,
-            expiresAt: Math.floor(expirationTime.getTime() / 1000),
-          };
-          
-          this.logger.log('Alternative parameters:', JSON.stringify(alternativeParams));
-          
-          const khqr = khqrInstance.generateIndividual(alternativeParams);
-          
-          if (khqr && khqr.data && khqr.data.md5) {
-            this.logger.log('Alternative SDK approach succeeded');
-            
-            const qrImage = await QRCode.toDataURL(khqr.data.qr, {
-              errorCorrectionLevel: 'H',
-              margin: 2,
-              width: 400,
-              color: {
-                dark: '#000000FF',
-                light: '#FFFFFFFF'
-              },
-              type: 'image/png',
-              quality: 1.0,
-            });
-
-            const expiresAt = new Date();
-            expiresAt.setMinutes(expiresAt.getMinutes() + 15);
-
-            return {
-              transactionId,
-              khqrString: khqr.data.qr,
-              khqrHash: khqr.data.md5,
-              qrImage,
-              expiresAt,
-              orderId: order.orderId,
-              amount: order.amount,
-              currency: 'USD',
-              md5: khqr.data.md5,
-              isFallback: false,
-            };
-          }
-        } catch (altError) {
-          this.logger.warn('Alternative SDK approach also failed, using basic QR fallback');
-          this.logger.warn(`Alternative error: ${altError.message}`);
-        }
-        
-        // Use fallback basic QR generation
-        return await this.generateBasicQR(order);
+        throw new Error(`KHQR generation failed: ${khqr?.status?.message || 'Unknown error'}`);
       }
+
+      this.logger.log(`KHQR generated successfully with MD5: ${khqr.data.md5}`);
+
+      // Generate QR code image from the KHQR string
+      const qrImage = await QRCode.toDataURL(khqr.data.qr, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 400,
+        color: {
+          dark: '#000000FF',
+          light: '#FFFFFFFF'
+        },
+        type: 'image/png',
+        quality: 1.0,
+      });
+
+      // Set expiration time (15 minutes)
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      return {
+        transactionId,
+        khqrString: khqr.data.qr,
+        khqrHash: khqr.data.md5, // IMPORTANT: Save this for verification
+        qrImage,
+        expiresAt,
+        orderId: order.orderId,
+        amount: order.amount,
+        currency: currency === khqrData.currency.khr ? 'KHR' : 'USD',
+        md5: khqr.data.md5, // Critical for transaction verification
+        isFallback: false,
+      };
     } catch (error) {
       this.logger.error('Failed to generate KHQR using SDK', error);
       throw new BadRequestException(`Failed to generate KHQR: ${error.message}`);
@@ -205,29 +141,64 @@ export class BakongService {
   }
 
   /**
-   * Check transaction status using official SDK
+   * Check transaction status using Bakong API directly
+   * The bakong-khqr SDK does not provide a checkTransaction method,
+   * so we call the Bakong REST API endpoint directly.
    */
   async checkTransaction(md5: string) {
     try {
       this.logger.log(`Checking transaction status for MD5: ${md5}`);
-      
-      const result = await KHQR.checkTransaction({
-        md5,
-      });
 
-      this.logger.log(`Transaction status: ${result.data.status}`);
-      
+      const config = this.getBakongConfig();
+      const url = `${config.apiUrl}/v1/check_transaction_by_merchant`;
+
+      // Call Bakong API directly to check transaction status
+      const response = await axios.post(
+        url,
+        { md5 },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.token}`,
+          },
+          timeout: 45000,
+        },
+      );
+
+      const respData = response.data;
+      this.logger.log(`Transaction API response: ${JSON.stringify(respData)}`);
+
+      // Bakong API returns { responseCode, errorCode, message, data }
+      // data contains { status, amount, currency, transactionId, ... }
+      const transactionData = respData.data || respData;
+
+      if (respData.errorCode || respData.responseCode !== 0) {
+        this.logger.warn(`Transaction check returned error: ${respData.errorCode || respData.responseCode} - ${respData.message || 'No message'}`);
+
+        return {
+          success: false,
+          status: 'PENDING',
+          amount: 0,
+          timestamp: null,
+          reference: null,
+          rawData: respData,
+        };
+      }
+
+      const status = transactionData.status || respData.status || 'PENDING';
+      this.logger.log(`Transaction status: ${status}`);
+
       return {
-        success: result.data.status === 'SUCCESS',
-        status: result.data.status,
-        amount: result.data.amount,
-        timestamp: result.data.timestamp,
-        reference: result.data.reference,
-        rawData: result.data,
+        success: status === 'SUCCESS' || status === 'PAID',
+        status,
+        amount: transactionData.amount || respData.amount,
+        timestamp: transactionData.timestamp || respData.timestamp,
+        reference: transactionData.reference || respData.reference,
+        rawData: transactionData,
       };
     } catch (error) {
-      this.logger.error('Failed to check transaction status', error);
-      
+      this.logger.error('Failed to check transaction status', error.message || error);
+
       // If API is not available, return pending status
       return {
         success: false,
@@ -245,11 +216,11 @@ export class BakongService {
    */
   validateKHQR(khqrString: string) {
     try {
-      const result = KHQR.validateQR(khqrString);
+      const result = BakongKHQR.verify(khqrString);
       return {
         isValid: result.isValid,
-        errors: result.errors || [],
-        data: result.data,
+        errors: result.isValid ? [] : ['KHQR string failed CRC verification'],
+        data: null,
       };
     } catch (error) {
       this.logger.error('Failed to validate KHQR', error);
@@ -267,41 +238,49 @@ export class BakongService {
   async generateDemoKHQR(order: any) {
     try {
       const config = this.getBakongConfig();
-      
+
       const transactionId = uuidv4();
-      
-      const optionalData = {
+
+      // Determine currency
+      const currency = order.currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
+
+      // Calculate expiration timestamp in MILLISECONDS (13 digits)
+      const expirationTimestamp = Date.now() + 15 * 60 * 1000;
+
+      const optionalData: any = {
+        amount: order.amount,
+        currency: currency,
         billNumber: order.orderId?.toString() || transactionId,
         storeLabel: config.merchantName,
         terminalLabel: 'Canteen Demo',
+        expirationTimestamp: expirationTimestamp,
       };
+
+      // Create IndividualInfo instance - correct SDK API
+      const individualInfo = new IndividualInfo(
+        config.accountId,
+        config.merchantName,
+        config.merchantCity,
+        optionalData,
+      );
 
       const khqrInstance = new BakongKHQR({
         token: config.token,
         isSandbox: config.isSandbox,
       });
-      
-      // Set expiration time (15 minutes from now)
-      const expirationTime = new Date();
-      expirationTime.setMinutes(expirationTime.getMinutes() + 15);
-      
-      // Prepare KHQR parameters with proper expiration timestamp
-      const khqrParams = {
-        bakongAccountID: config.accountId,
-        merchantName: config.merchantName,
-        merchantCity: config.merchantCity,
-        amount: order.amount,
-        currency: KHQR.khqrData.currency.usd,
-        optionalData,
-        expiresAt: Math.floor(expirationTime.getTime() / 1000), // Required for dynamic KHQR
-      };
 
-      this.logger.log('Demo KHQR generation parameters:', JSON.stringify(khqrParams));
-      
-      const khqr = khqrInstance.generateIndividual(khqrParams);
+      const khqr = khqrInstance.generateIndividual(individualInfo);
 
-      const qrImage = await QRCode.toDataURL(khqr.data.qr);
-      
+      if (!khqr || khqr.status.code !== 0 || !khqr.data) {
+        throw new Error(`Demo KHQR generation failed: ${khqr?.status?.message || 'Unknown error'}`);
+      }
+
+      const qrImage = await QRCode.toDataURL(khqr.data.qr, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 400,
+      });
+
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 15);
 
@@ -313,60 +292,12 @@ export class BakongService {
         expiresAt,
         orderId: order.orderId,
         amount: order.amount,
-        currency: 'USD',
+        currency: currency === khqrData.currency.khr ? 'KHR' : 'USD',
         md5: khqr.data.md5,
       };
     } catch (error) {
       this.logger.error('Failed to generate demo KHQR', error);
       throw new BadRequestException(`Failed to generate demo KHQR: ${error.message}`);
-    }
-  }
-
-  /**
-   * Generate basic QR code as fallback when official SDK fails
-   */
-  async generateBasicQR(order: any) {
-    try {
-      const config = this.getBakongConfig();
-      const transactionId = uuidv4();
-      
-      // Create basic payment data that can be scanned by any QR reader
-      const paymentData = `Bakong Payment\nAccount: ${config.accountId}\nAmount: $${order.amount}\nOrder: ${order.orderId}\nTxn: ${transactionId}`;
-      
-      // Generate QR code image
-      const qrImage = await QRCode.toDataURL(paymentData, {
-        errorCorrectionLevel: 'H',
-        margin: 2,
-        width: 400,
-        color: {
-          dark: '#000000FF',
-          light: '#FFFFFFFF'
-        },
-        type: 'image/png',
-        quality: 1.0,
-      });
-
-      // Set expiration time (15 minutes)
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
-
-      this.logger.log(`Basic QR generated successfully as fallback for transaction ${transactionId}`);
-
-      return {
-        transactionId,
-        khqrString: paymentData,
-        khqrHash: transactionId, // Use transaction ID as hash for fallback
-        qrImage,
-        expiresAt,
-        orderId: order.orderId,
-        amount: order.amount,
-        currency: 'USD',
-        md5: transactionId, // Use transaction ID as MD5 for fallback
-        isFallback: true, // Flag to indicate this is a fallback QR
-      };
-    } catch (error) {
-      this.logger.error('Failed to generate basic QR as fallback', error);
-      throw new BadRequestException(`Failed to generate basic QR: ${error.message}`);
     }
   }
 
@@ -378,25 +309,25 @@ export class BakongService {
       this.logger.error('Bakong account ID is empty');
       return { isValid: false, isPlaceholder: false };
     }
-    
+
     // Check if account ID is a placeholder
     const isPlaceholder = accountId === 'YOUR_ACTUAL_BAKONG_ACCOUNT_ID_HERE' || accountId === 'norm_soklim@bkrt';
-    
+
     // Check if account ID follows Bakong format (email-like format or phone number format)
     const bakongAccountRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$|^\+?[0-9]{10,15}$/;
     const isValidFormat = bakongAccountRegex.test(accountId);
-    
+
     // For placeholder accounts, we allow them to proceed but with warnings
     if (isPlaceholder) {
       this.logger.warn('Using placeholder Bakong account ID - this may not work for production. Please configure a valid account in your .env file.');
       return { isValid: true, isPlaceholder: true };
     }
-    
+
     if (!isValidFormat) {
       this.logger.error(`Invalid Bakong account ID format: ${accountId}`);
       return { isValid: false, isPlaceholder: false };
     }
-    
+
     return { isValid: true, isPlaceholder: false };
   }
 
@@ -414,7 +345,7 @@ export class BakongService {
     const config = this.getBakongConfig();
     const validationResult = this.validateBakongAccount(config.accountId);
     const isDefaultAccount = config.accountId === 'YOUR_ACTUAL_BAKONG_ACCOUNT_ID_HERE' || config.accountId === 'norm_soklim@bkrt';
-    
+
     return {
       accountId: config.accountId,
       merchantName: config.merchantName,
@@ -441,7 +372,9 @@ export class BakongService {
   }> {
     try {
       this.logger.log(`Checking Bakong account: ${accountId}`);
-      
+
+      const config = this.getBakongConfig();
+
       // Validate account ID format
       const validationResult = this.validateBakongAccount(accountId);
       if (!validationResult.isValid) {
@@ -453,30 +386,51 @@ export class BakongService {
         };
       }
 
-      // For now, we'll simulate the check since we don't have a direct API
-      // In a real implementation, this would call the Bakong API
-      // Since we don't have the actual API endpoint, we'll use our existing validation
-      
-      // Check if it's a placeholder account
-      const isPlaceholder = accountId === 'YOUR_ACTUAL_BAKONG_ACCOUNT_ID_HERE' || accountId === 'norm_soklim@bkrt';
-      
-      if (isPlaceholder) {
+      // Use the SDK's static method to check account existence
+      try {
+        const result = await BakongKHQR.checkBakongAccount(
+          config.apiUrl,
+          accountId,
+        );
+
+        if (result.status.code === 0) {
+          return {
+            responseCode: 0,
+            responseMessage: 'Account exists',
+            errorCode: null,
+            data: null,
+          };
+        } else {
+          return {
+            responseCode: 1,
+            responseMessage: result.status.message || 'Account not found',
+            errorCode: result.status.errorCode,
+            data: null,
+          };
+        }
+      } catch (apiError) {
+        this.logger.warn('Bakong API call failed, falling back to format validation', apiError);
+
+        // Fallback: check if it's a placeholder account
+        const isPlaceholder = accountId === 'YOUR_ACTUAL_BAKONG_ACCOUNT_ID_HERE' || accountId === 'norm_soklim@bkrt';
+
+        if (isPlaceholder) {
+          return {
+            responseCode: 1,
+            responseMessage: 'Account ID not found',
+            errorCode: 11,
+            data: null,
+          };
+        }
+
+        // For valid format accounts, assume they might exist
         return {
-          responseCode: 1,
-          responseMessage: 'Account ID not found',
-          errorCode: 11,
+          responseCode: 0,
+          responseMessage: 'Account ID format is valid (could not verify with API)',
+          errorCode: null,
           data: null,
         };
       }
-
-      // For demo purposes, we'll assume any valid format account exists
-      // In production, this should call the actual Bakong API
-      return {
-        responseCode: 0,
-        responseMessage: 'Account ID exists',
-        errorCode: null,
-        data: null,
-      };
     } catch (error) {
       this.logger.error('Failed to check Bakong account', error);
       return {

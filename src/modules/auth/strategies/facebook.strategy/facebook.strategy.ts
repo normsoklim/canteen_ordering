@@ -54,6 +54,7 @@ export class FacebookStrategy extends PassportStrategy(
       providerId: facebookId,
       facebookId: facebookId,
       isEmailVerified: true, // Facebook has already verified the email
+      phone: '',
     });
 
     // Generate JWT token
@@ -70,6 +71,7 @@ export class FacebookStrategy extends PassportStrategy(
         provider: user.provider,
         providerId: user.providerId,
         facebookId: user.facebookId,
+        phone: user.phone,
       },
     };
   }

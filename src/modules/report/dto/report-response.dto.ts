@@ -1,29 +1,32 @@
 import { ReportType } from '../enums/report-type.enum';
+import { ExportFormat } from '../enums/export-format.enum';
+import { ReportStatus } from '../enums/report-status.enum';
+
+export class ReportItemResponseDto {
+  id: number;
+  menuItemName: string;
+  categoryName?: string;
+  totalQuantitySold: number;
+  totalRevenue: number;
+  orderCount: number;
+  rank: number;
+}
 
 export class ReportResponseDto {
   id: number;
-  reportType: string;
+  reportType: ReportType;
   generatedBy: number;
   periodStart: Date;
   periodEnd: Date;
   totalRevenue: number;
   totalOrders: number;
   paidTransactions: number;
-  exportFormat: ReportType;
+  exportFormat: ExportFormat;
   fileUrl: string;
   generatedAt: Date;
-  status: 'processing' | 'completed' | 'failed';
+  status: ReportStatus;
   estimatedCompletionTime?: Date;
-}
-
-export class ReportItemResponseDto {
-  id: number;
-  menuItemName: string;
-  totalQuantitySold: number;
-  totalRevenue: number;
-  orderCount: number;
-  rank: number;
-  categoryName?: string;
+  reportItems?: ReportItemResponseDto[];
 }
 
 export class ReportPreviewResponseDto {
@@ -32,9 +35,18 @@ export class ReportPreviewResponseDto {
     totalOrders: number;
     totalItemsSold: number;
     averageOrderValue: number;
+    paidTransactions: number;
     period: string;
   };
   topItems: ReportItemResponseDto[];
   totalPages: number;
   currentPage: number;
+}
+
+export class PaginatedReportsResponseDto {
+  reports: ReportResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

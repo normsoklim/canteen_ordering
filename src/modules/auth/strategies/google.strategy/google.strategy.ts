@@ -37,7 +37,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       password: googleId, // Use googleId as password for OAuth users
       providerId: googleId,
       googleId: googleId,
-      isEmailVerified: true, // Google has already verified the email
+      isEmailVerified: true, 
+      phone: '', // Google has already verified the email
     });
 
     // Generate JWT token
@@ -54,6 +55,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         provider: user.provider,
         providerId: user.providerId,
         googleId: user.googleId,
+        phone : user.phone,
       },
     };
   }

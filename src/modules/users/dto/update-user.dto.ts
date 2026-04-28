@@ -27,4 +27,8 @@ export class UpdateUserDto {
   @IsOptional()
   providerId?: string;
 
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
 }

@@ -5,9 +5,14 @@ import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ValidationExceptionFilter } from './common/filters/validation-exception/validation-exception.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // Serve static files from public directory
+  app.useStaticAssets(join(__dirname, '..', 'public'));
   
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -33,5 +38,7 @@ async function bootstrap() {
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
+  console.log(`🧪 KHQR Test UI available at: http://localhost:${port}/khqr-test.html`);
+  console.log(`🚀 Application is running on: http://localhost:${port}/report-test.html`) ;
 }
 bootstrap();

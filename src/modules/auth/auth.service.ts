@@ -48,6 +48,10 @@ export class AuthService {
         providerId: user.providerId,
         googleId: user.googleId,
         facebookId: user.facebookId,
+        isEmailVerified: user.isEmailVerified,
+        phone: user.phone,
+        
+      
       },
       access_token: await this.jwtService.signAsync(payload),
     };
@@ -77,7 +81,7 @@ export class AuthService {
   }
 
   async verifyRegistration(verifyRegDto: VerifyRegistrationDto): Promise<{ user: any }> {
-    const { email, otpCode, full_name, password, provider, role, providerId, googleId, facebookId } = verifyRegDto;
+    const { email, otpCode, full_name, password, provider, role, providerId, googleId, facebookId ,phone } = verifyRegDto;
     
     // Verify OTP
     const isOtpValid = await this.otpService.verifyOtp(email, otpCode);
@@ -107,7 +111,9 @@ export class AuthService {
       googleId: googleId,
       facebookId: facebookId,
       isEmailVerified: true,
+      phone: phone,
       emailVerifiedAt: new Date(),
+      
     });
 
     // Send welcome email
@@ -124,6 +130,7 @@ export class AuthService {
         googleId: user.googleId,
         facebookId: user.facebookId,
         isEmailVerified: user.isEmailVerified,
+        phone: user.phone,
       },
     };
   }
@@ -171,6 +178,7 @@ export class AuthService {
       providerId: user.providerId,
       googleId: user.googleId,
       facebookId: user.facebookId,
+      phone: user.phone,
     };
   }
   
@@ -205,6 +213,7 @@ export class AuthService {
         facebookId: registerDto.facebookId,
         isEmailVerified: registerDto.isEmailVerified ?? false,
         emailVerifiedAt: registerDto.isEmailVerified ? new Date() : undefined,
+        phone: registerDto.phone,
       });
       return user;
     }
